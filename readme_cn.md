@@ -1,8 +1,8 @@
-# 一、简介
+## 一、简介
 
 Glint是Android实现基于OkHttp的Http标准协议框架，支持接口请求，文件下载，文件上传，WebSocket四大功能。 
 
-# 二、框架特性 
+## 二、框架特性 
 * 底层框架为OkHttp
 * 支持异步请求、支持同步请求
 * 支持文件上传
@@ -14,7 +14,7 @@ Glint是Android实现基于OkHttp的Http标准协议框架，支持接口请求�
 * 支持取消某个请求、取消所有请求
 * 入口好记，分别是GlintHttp，GlintDownload，GlintUpload，GlintSocket
 
-# 三、使用方法
+## 三、安装
 
 推荐使用 Maven：
 ``` gradle
@@ -24,9 +24,9 @@ dependencies {
 }
 ```
 
-# 四、HTTP请求 
+## 四、HTTP请求 
 
-## 请求队列
+### 请求队列
 最基本的请求：
 
 ``` java
@@ -39,7 +39,7 @@ GlintHttp.get(url).execute(new GlintHttpListener<String>() {
 });
 ```
 
-## 高级自定义配置 
+### 高级自定义配置 
 
 新建一个类，继承BaseHttpModule，使用HttpModule有两种使用方式
 
@@ -85,10 +85,10 @@ GlintHttp.get(url, params).using(MyHttpModule.get()).execute(new GlintHttpListen
 
 其他使用方法请查阅GlintHttp的公开方法。 
 
-## HTTP请求添加参数
+### HTTP请求添加参数
 参数使用TreeMap来装载数据，使用时，请勿传入null键
 
-## OkHttp配置
+### OkHttp配置
 复写BaseHttpModule里的onOkHttpBuildCreate方法
 
 ``` java
@@ -99,7 +99,7 @@ public OkHttpClient.Builder onOkHttpBuildCreate(@NonNull Glint.GlintType clientT
 }
 ```
 
-## GlintHttpModule配置
+### GlintHttpModule配置
 
 ``` java
 public class MyHttpModule extends BaseHttpModule {
@@ -173,7 +173,7 @@ public class MyHttpModule extends BaseHttpModule {
 这样就全部配置完毕了，如果你不需要这个高级配置的话，可无需任何配置也可以正常使用，在这份配置中，onOkHttpBuildCreate方法在本进程只执行一次，其他方法在每个请求都会执行。
 
 
-# 五、文件下载请求
+## 五、文件下载请求
 
 下面是基本的使用方法
 
@@ -192,7 +192,7 @@ GlintDownload.download("https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_and
 ```
 更多高级用法可参阅源码，如下载过程支持可取消，可暂停和恢复。
 
-# 六、文件上传请求
+## 六、文件上传请求
 
 下面是基本的使用方法：
 
@@ -210,9 +210,9 @@ GlintUpload.upload("https://www.qq.com/", new File(getExternalCacheDir(), "mobil
 });
 ```
 
-# 七、WebSocket请求
+## 七、WebSocket请求
 
-## 下面是发送一条消息的使用方法：
+### 下面是发送一条消息的使用方法：
 
 ``` java
 GlintSocket.sendIO(url, "cmd", "我是消息").execute(new GlintSocketListener<String>() {
@@ -230,7 +230,7 @@ GlintSocket.sendIO(url, "cmd", "我是消息").execute(new GlintSocketListener<S
 
 注意，GlintSocketRequest有send和sendIO和两个方法，如果连接的是WebSocket就使用send，连接的是柚子IO就使用sendIO
 
-## 下面是设置一个事件监听的使用方法：
+### 下面是设置一个事件监听的使用方法：
 
 ``` java
 GlintSocket.on("http://socket.test", "cmd").execute(new GlintSocketListener<String>() {
@@ -251,23 +251,23 @@ GlintSocket.on("http://socket.test", "cmd").execute(new GlintSocketListener<Stri
 GlintSocket.off("http://socket.test", "cmd");
 ```
 
-# 八、常用工具类
+## 八、实用工具类
 
-## 轻松获取一个Contex对象获取Application对象：
+### 轻松获取一个Contex对象获取Application对象：
 
 ``` java
 Context context = ContextHelper.getAppContext();
 Application application = ContextHelper.getApplication();
 ```
  
-## 获取字符串或文件的MD5值：
+### 获取字符串或文件的MD5值：
 
 ``` java
 String strMd5 = Md5Util.getMD5Str("hello, world");
 String fileMd5 = Md5Util.getMD5Str(new File("demo.txt"));
 ```
  
-## 从子线程快速切到主线程：
+### 从子线程快速切到主线程：
 
 ``` java
 UiKit.runOnMainThreadAsync(new Runnable() {

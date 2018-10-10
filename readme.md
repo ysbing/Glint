@@ -1,11 +1,11 @@
 
 中文版本请参看[这里](./readme_cn.md)
 
-# Introduction
+## I. Introduction
 
 Glint is an Http standard protocol framework based on OkHttp for Android. It supports four functions: interface request, file download, file upload and WebSocket.
 
-# Feature
+## II. Feature
 * The underlying framework is OkHttp
 * Support asynchronous request, support synchronous request
 * Support file upload
@@ -17,7 +17,7 @@ Glint is an Http standard protocol framework based on OkHttp for Android. It sup
 * Support cancels a request, cancels all requests
 * The entrance is easy to remember, which are GlintHttp, GlintDownload, GlintUpload, GlintSocket
 
-# Instructions
+## III. Install
 
 Maven is recommended:
 ``` gradle
@@ -27,9 +27,9 @@ Dependencies {
 }
 ```
 
-# HTTP request
+## IV. HTTP request
 
-## Request queue
+### Request queue
 The most basic request:
 
 ``` java
@@ -42,7 +42,7 @@ GlintHttp.get(url).execute(new GlintHttpListener<String>() {
 });
 ```
 
-## Advanced Custom Configuration
+### Advanced Custom Configuration
 
 Create a new class, inherit BaseHttpModule, use HttpModule has two ways to use
 
@@ -88,10 +88,10 @@ GlintHttp.get(url, params).using(MyHttpModule.get()).execute(new GlintHttpListen
 
 For other usage methods, please refer to the public method of GlintHttp.
 
-## HTTP request to add parameters
+### HTTP request to add parameters
 The parameter uses TreeMap to load the data. When using, do not pass in the null key.
 
-## OkHttpConfiguration
+### OkHttpConfiguration
 Override the onOkHttpBuildCreate method in BaseHttpModule
 
 ``` java
@@ -102,7 +102,7 @@ Public OkHttpClient.Builder onOkHttpBuildCreate(@NonNull Glint.GlintType clientT
 }
 ```
 
-## GlintHttpModule Configuration
+### GlintHttpModule Configuration
 
 ``` java
 Public class MyHttpModule extends BaseHttpModule {
@@ -176,7 +176,7 @@ Public class MyHttpModule extends BaseHttpModule {
 This is all configured, if you do not need this advanced configuration, you can use it without any configuration. In this configuration, the onOkHttpBuildCreate method is only executed once in this process, and other methods are executed in each request.
 
 
-# File download request
+## V. File download request
 The following is the basic method of use
 
 ``` java
@@ -194,7 +194,7 @@ GlintDownload.download("https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_and
 ```
 More advanced usage can be found in the source code, such as the download process support can be canceled, can be suspended and resumed.
 
-# File upload request
+## VI File upload request
 
 Here's the basic usage:
 
@@ -212,9 +212,9 @@ GlintUpload.upload("https://www.qq.com/", new File(getExternalCacheDir(), "mobil
 });
 ```
 
-# WebSocket request
+## VII WebSocket request
 
-## The following is how to send a message:
+### The following is how to send a message:
 
 ``` java
 GlintSocket.sendIO(url, "cmd", "I am a message").execute(new GlintSocketListener<String>() {
@@ -232,7 +232,7 @@ GlintSocket.sendIO(url, "cmd", "I am a message").execute(new GlintSocketListener
 
 Note that GlintSocketRequest has send and sendIO and two methods. If you connect to WebSocket, use send. If you connect grapefruit IO, use sendIO.
 
-## The following is how to set up an event listener:
+### The following is how to set up an event listener:
 
 ``` java
 GlintSocket.on("http://socket.test", "cmd").execute(new GlintSocketListener<String>() {
@@ -253,23 +253,23 @@ When you don't need a Socket, remember to release the connection. Otherwise, the
 GlintSocket.off("http://socket.test", "cmd");
 ```
 
-# Tools
+## VIII Tools
 
-## Easily get a Contex object to get the Application object:
+### Easily get a Contex object to get the Application object:
 
 ``` java
 Context context = ContextHelper.getAppContext();
 Application application = ContextHelper.getApplication();
 ```
  
-## Get the MD5 value of a string or file:
+### Get the MD5 value of a string or file:
 
 ``` java
 String strMd5 = Md5Util.getMD5Str("hello, world");
 String fileMd5 = Md5Util.getMD5Str(new File("demo.txt"));
 ```
  
-## Quickly cut from the child thread to the main thread:
+### Quickly cut from the child thread to the main thread:
 
 ``` java
 UiKit.runOnMainThreadAsync(new Runnable() {
