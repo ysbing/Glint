@@ -194,7 +194,7 @@ GlintDownload.download("https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_and
 ```
 More advanced usage can be found in the source code, such as the download process support can be canceled, can be suspended and resumed.
 
-## VI File upload request
+## VI. File upload request
 
 Here's the basic usage:
 
@@ -212,7 +212,7 @@ GlintUpload.upload("https://www.qq.com/", new File(getExternalCacheDir(), "mobil
 });
 ```
 
-## VII WebSocket request
+## VII. WebSocket request
 
 ### The following is how to send a message:
 
@@ -253,7 +253,7 @@ When you don't need a Socket, remember to release the connection. Otherwise, the
 GlintSocket.off("http://socket.test", "cmd");
 ```
 
-## VIII Tools
+## VIII. Tools
 
 ### Easily get a Contex object to get the Application object:
 
