@@ -1,0 +1,29 @@
+apply plugin: 'com.android.library'
+apply from: new File(rootProject.projectDir, "gradle/gradle-on-demand.gradle")
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 9
+        compileSdkVersion 28
+        versionCode VERSION_CODE  as int
+        versionName VERSION_NAME as String
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    api fileTree(include: ['*.jar'], dir: 'libs')
+    //noinspection GradleDependency,GradleCompatible
+    api 'com.android.support:support-fragment:25.3.1'
+    //noinspection GradleDependency
+    api 'com.google.code.gson:gson:2.7'
+    //noinspection GradleDependency
+    api 'com.squareup.okhttp3:okhttp:3.8.0'
+}

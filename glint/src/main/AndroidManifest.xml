@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ysbing.glint">
+
+    <!--网络权限-->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!--文件读写权限，用于缓存、下载和上传-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!--用于获取当前运行的Activity数量-->
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <application>
+        <service android:name=".socket.GlintSocketServiceNative" />
+    </application>
+
+</manifest>
