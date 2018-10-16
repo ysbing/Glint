@@ -51,13 +51,19 @@ public class GlintSocketBuilderStub<T> extends GlintSocketBuilderWrapper.Stub {
     public void onResponse(String response) {
         if (builder.listener != null) {
             Type typeOfT = GlintRequestUtil.getListenerType(builder.listener.getClass());
-            JsonParser parser = new JsonParser();
-            JsonElement jsonElement = parser.parse(response);
-            final T t = GlintRequestUtil.successDeserialize(new Gson(), jsonElement, typeOfT);
+            final T t;
+            if (typeOfT.equals(Void.class)) {
+                t = null;
+            } else {
+                JsonParser parser = new JsonParser();
+                JsonElement jsonElement = parser.parse(response);
+                t = GlintRequestUtil.successDeserialize(new Gson(), jsonElement, typeOfT);
+            }
             UiKit.runOnMainThreadAsync(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        //noinspection ConstantConditions
                         builder.listener.onProcess(t);
                     } catch (Exception e) {
                         onError(e.getMessage());

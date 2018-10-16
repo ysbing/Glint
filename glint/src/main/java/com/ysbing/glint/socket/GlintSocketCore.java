@@ -76,14 +76,28 @@ public class GlintSocketCore {
                 mRunningAsyncCalls.remove(mUrl);
                 Set<String> keySet = mAsyncListeners.keySet();
                 for (String s : keySet) {
+                    if (GlintSocket.EVENT_CONNECT.equals(s) || GlintSocket.EVENT_DISCONNECT.equals(s) || GlintSocket.EVENT_ERROR.equals(s)) {
+                        continue;
+                    }
                     mAsyncListeners.get(s).onError(throwable.toString());
                 }
+                if (mAsyncListeners.containsKey(GlintSocket.EVENT_ERROR)) {
+                    try {
+                        mAsyncListeners.get(GlintSocket.EVENT_ERROR).onProcess("");
+                    } catch (Exception ignored) {
+                    }
+                }
+
             }
         });
     }
 
     private void socketConnect(@NonNull String socketUrl) {
         mRunningAsyncCalls.remove(mUrl);
+        if (mWebSocket != null) {
+            mWebSocket.cancel();
+            mWebSocket = null;
+        }
         Request request = new Request.Builder().url(socketUrl).build();
         sClient.newWebSocket(request, socketListener);
     }
@@ -98,6 +112,12 @@ public class GlintSocketCore {
                 webSocket.send(waitMessage);
             }
             mWaitMessages.clear();
+            if (mAsyncListeners.containsKey(GlintSocket.EVENT_CONNECT)) {
+                try {
+                    mAsyncListeners.get(GlintSocket.EVENT_CONNECT).onProcess("");
+                } catch (Exception ignored) {
+                }
+            }
         }
 
         @Override
@@ -129,6 +149,9 @@ public class GlintSocketCore {
                 case IOMessage.TYPE_ERROR:
                     Set<String> keySet2 = mAsyncListeners.keySet();
                     for (String s : keySet2) {
+                        if (GlintSocket.EVENT_CONNECT.equals(s) || GlintSocket.EVENT_DISCONNECT.equals(s) || GlintSocket.EVENT_ERROR.equals(s)) {
+                            continue;
+                        }
                         mAsyncListeners.get(s).onError(message.getData());
                     }
                 case IOMessage.TYPE_NOOP:
@@ -148,16 +171,24 @@ public class GlintSocketCore {
         public void onClosed(WebSocket webSocket, int code, String reason) {
             super.onClosed(webSocket, code, reason);
             mConnected = false;
+            if (mAsyncListeners.containsKey(GlintSocket.EVENT_DISCONNECT)) {
+                try {
+                    mAsyncListeners.get(GlintSocket.EVENT_DISCONNECT).onProcess("");
+                } catch (Exception ignored) {
+                }
+            }
         }
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
             super.onFailure(webSocket, t, response);
-            disconnect();
-            Set<String> keySet2 = mAsyncListeners.keySet();
-            for (String s : keySet2) {
-                mAsyncListeners.get(s).onError(t.toString());
+            if (mAsyncListeners.containsKey(GlintSocket.EVENT_ERROR) && mWebSocket != null) {
+                try {
+                    mAsyncListeners.get(GlintSocket.EVENT_ERROR).onProcess("");
+                } catch (Exception ignored) {
+                }
             }
+            disconnect();
         }
     };
 
@@ -229,5 +260,4 @@ public class GlintSocketCore {
             mAsyncListeners.remove(cmdId);
         }
     }
-
 }

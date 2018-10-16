@@ -15,6 +15,19 @@ import com.ysbing.glint.socket.socketio.Protocol;
  */
 public class GlintSocket {
 
+    /**
+     * 连接成功事件
+     */
+    public static final String EVENT_CONNECT = "EVENT_CONNECT";
+    /**
+     * 正常断开连接事件
+     */
+    public static final String EVENT_DISCONNECT = "EVENT_DISCONNECT";
+    /**
+     * 异常断开事件，如网络中断
+     */
+    public static final String EVENT_ERROR = "EVENT_ERROR";
+
     private final GlintSocketBuilder builder;
 
     /**
