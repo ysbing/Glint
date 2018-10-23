@@ -4,21 +4,21 @@ import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.util.SparseArrayCompat;
 import android.text.TextUtils;
-import android.util.SparseArray;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Socket的管理和实现类
  *
- * @author ysbing
+ * @author zhujiechen@sohu-inc.com (陈祝界)
  */
 public class GlintSocketServiceStub extends GlintSocketService.Stub {
 
-    private final SparseArrayCompat<Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>>> mOnPushListeners = new SparseArrayCompat<>();
-    private final SparseArray<GlintSocketCore> mSocketSparseArray = new SparseArray<>();
+    private final Map<String, Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>>> mOnPushListeners = new ConcurrentHashMap<>();
+    private final Map<String, GlintSocketCore> mSocketSparseArray = new ConcurrentHashMap<>();
 
     @Override
     public void send(GlintSocketBuilderWrapper builderWrapper) throws RemoteException {
@@ -26,10 +26,10 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
         if (TextUtils.isEmpty(url)) {
             return;
         }
-        GlintSocketCore socket = mSocketSparseArray.get(url.hashCode());
+        GlintSocketCore socket = mSocketSparseArray.get(url);
         if (socket == null) {
             connect(url);
-            socket = mSocketSparseArray.get(url.hashCode());
+            socket = mSocketSparseArray.get(url);
         } else if (!socket.isConnected()) {
             socket.connect();
         }
@@ -39,7 +39,7 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
 
     @Override
     public void connect(String url) {
-        GlintSocketCore socket = mSocketSparseArray.get(url.hashCode());
+        GlintSocketCore socket = mSocketSparseArray.get(url);
         if (socket == null || !socket.isConnected()) {
             if (socket != null) {
                 socket.connect();
@@ -50,24 +50,24 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
                 }
                 socket = new GlintSocketCore(URI.create(requestUrl));
                 socket.connect();
-                mSocketSparseArray.put(url.hashCode(), socket);
+                mSocketSparseArray.put(url, socket);
             }
         }
     }
 
     @Override
     public void on(final GlintSocketBuilderWrapper builderWrapper) throws RemoteException {
-        GlintSocketCore socket = mSocketSparseArray.get(builderWrapper.getUrl().hashCode());
+        GlintSocketCore socket = mSocketSparseArray.get(builderWrapper.getUrl());
         if (socket == null) {
             connect(builderWrapper.getUrl());
-            socket = mSocketSparseArray.get(builderWrapper.getUrl().hashCode());
+            socket = mSocketSparseArray.get(builderWrapper.getUrl());
         } else if (!socket.isConnected()) {
             socket.connect();
         }
-        Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> maps = mOnPushListeners.get(builderWrapper.getUrl().hashCode());
+        Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> maps = mOnPushListeners.get(builderWrapper.getUrl());
         if (maps == null) {
             maps = new HashMap<>();
-            mOnPushListeners.put(builderWrapper.getUrl().hashCode(), maps);
+            mOnPushListeners.put(builderWrapper.getUrl(), maps);
         }
         SparseArrayCompat<GlintSocketBuilderWrapper> sparseArrayCompat = maps.get(builderWrapper.getCmdId());
         if (sparseArrayCompat == null) {
@@ -79,7 +79,7 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
             @Override
             public void onProcess(@NonNull String result) throws Exception {
                 super.onProcess(result);
-                Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> maps = mOnPushListeners.get(builderWrapper.getUrl().hashCode());
+                Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> maps = mOnPushListeners.get(builderWrapper.getUrl());
                 SparseArrayCompat<GlintSocketBuilderWrapper> wrappers = maps.get(builderWrapper.getCmdId());
                 for (int i = 0; wrappers != null && i < wrappers.size(); i++) {
                     try {
@@ -94,7 +94,7 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
             public void onError(@NonNull String error) {
                 super.onError(error);
                 try {
-                    Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> maps = mOnPushListeners.get(builderWrapper.getUrl().hashCode());
+                    Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> maps = mOnPushListeners.get(builderWrapper.getUrl());
                     SparseArrayCompat<GlintSocketBuilderWrapper> wrappers = maps.get(builderWrapper.getCmdId());
                     for (int i = 0; wrappers != null && i < wrappers.size(); i++) {
                         try {
@@ -117,17 +117,19 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
 
     @Override
     public void off(String url, String cmdId, int tag) {
-        GlintSocketCore socket = mSocketSparseArray.get(url.hashCode());
+        GlintSocketCore socket = mSocketSparseArray.get(url);
         if (socket != null) {
             socket.off(cmdId);
             if (TextUtils.isEmpty(cmdId)) {
                 socket.disconnect();
+                mSocketSparseArray.remove(url);
             }
         }
-        Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> cmdIdMaps = mOnPushListeners.get(url.hashCode());
+        Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> cmdIdMaps = mOnPushListeners.get(url);
         if (cmdIdMaps != null) {
             if (TextUtils.isEmpty(cmdId)) {
                 cmdIdMaps.clear();
+                mOnPushListeners.remove(url);
             } else {
                 SparseArrayCompat<GlintSocketBuilderWrapper> wrappers = cmdIdMaps.get(cmdId);
                 if (wrappers != null) {
@@ -147,19 +149,9 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
     }
 
     @Override
-    public void refreshHost(String url, String lastUrl) {
-        if (!TextUtils.equals(url, lastUrl)) {
-            mSocketSparseArray.put(url.hashCode(), mSocketSparseArray.get(lastUrl.hashCode()));
-            mOnPushListeners.put(url.hashCode(), mOnPushListeners.get(lastUrl.hashCode()));
-            mSocketSparseArray.remove(lastUrl.hashCode());
-            mOnPushListeners.remove(lastUrl.hashCode());
-        }
-    }
-
-    @Override
     public void offAll() {
-        for (int i = 0; i < mSocketSparseArray.size(); i++) {
-            GlintSocketCore socket = mSocketSparseArray.valueAt(i);
+        for (String key : mSocketSparseArray.keySet()) {
+            GlintSocketCore socket = mSocketSparseArray.get(key);
             if (socket != null) {
                 socket.disconnect();
             }

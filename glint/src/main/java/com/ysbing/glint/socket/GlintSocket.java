@@ -27,6 +27,14 @@ public class GlintSocket {
      * 异常断开事件，如网络中断
      */
     public static final String EVENT_ERROR = "EVENT_ERROR";
+    /**
+     * 网络错误
+     */
+    public static final int ERROR_NET = 0x1;
+    /**
+     * 异常错误
+     */
+    public static final int ERROR_EXCEPTION = 0x2;
 
     private final GlintSocketBuilder builder;
 
@@ -83,10 +91,6 @@ public class GlintSocket {
         builder.cmdId = cmdId;
         builder.tag = tag;
         GlintSocketDispatcher.getInstance().removePushListener(builder);
-    }
-
-    public static void refreshHost(@NonNull String url, @NonNull String lastUrl) {
-        GlintSocketDispatcher.getInstance().refreshHost(url, lastUrl);
     }
 
     public void off() {

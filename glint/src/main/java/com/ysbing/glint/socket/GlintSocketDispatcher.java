@@ -113,18 +113,6 @@ public class GlintSocketDispatcher implements ServiceConnection {
         }
     }
 
-    void refreshHost(String url, String lastUrl) {
-        try {
-            if (mService != null) {
-                mService.refreshHost(url, lastUrl);
-            } else {
-                mSocketServiceStub.refreshHost(url, lastUrl);
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * 删除所有，包括Socket的连接
      */

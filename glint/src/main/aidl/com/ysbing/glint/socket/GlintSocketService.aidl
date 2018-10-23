@@ -12,8 +12,5 @@ interface GlintSocketService {
 
     void off(String url, String cmdId, int tag);
 
-    void refreshHost(String url, String lastUrl);
-
     void offAll();
-
 }

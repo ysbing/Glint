@@ -49,11 +49,6 @@ public class GlintSocketServiceNative extends Service implements GlintSocketServ
     }
 
     @Override
-    public void refreshHost(String url, String lastUrl) throws RemoteException {
-        mStub.refreshHost(url, lastUrl);
-    }
-
-    @Override
     public void offAll() throws RemoteException {
         mStub.offAll();
     }
