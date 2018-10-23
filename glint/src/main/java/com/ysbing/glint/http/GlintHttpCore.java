@@ -113,7 +113,7 @@ public class GlintHttpCore<T> implements Runnable {
             // 如果不是标准的json数据，直接将整个数据返回
             if (mBuilder.notJson) {
                 String responseStr = responseBody.string(); //这里是强转泛型的方法
-                //noinspection unchecked
+                //noinspection unchecked,ConstantConditions
                 t = (T) Primitives.wrap(String.class.getSuperclass()).cast(responseStr);
                 result.setRunStatus(Glint.ResultStatus.STATUS_NORMAL);
                 result.setData(t);
@@ -176,7 +176,7 @@ public class GlintHttpCore<T> implements Runnable {
             result.setResponseStr(responseStr);
             result.setHeaders(response.headers());
             //这里是强转泛型的方法
-            //noinspection unchecked
+            //noinspection unchecked,ConstantConditions
             T t = (T) Primitives.wrap(String.class.getSuperclass()).cast(responseStr);
             result.setRunStatus(Glint.ResultStatus.STATUS_NORMAL);
             result.setData(t);

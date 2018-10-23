@@ -34,7 +34,6 @@ public class GlintBaseBuilder<E extends BaseHttpModule> {
      * 是否使用标准json解析
      */
     public boolean standardDeserialize = true;
-    ;
     /**
      * 使用签名，默认否
      */

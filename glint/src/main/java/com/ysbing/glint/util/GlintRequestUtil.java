@@ -81,7 +81,7 @@ public class GlintRequestUtil {
      * @param <T>         转换的对象类型
      * @return 转换后的对象
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
     public static <T> T successDeserialize(@NonNull Gson gson, @NonNull JsonElement jsonElement, @NonNull Type type) {
         T t;
         // 需要根据不同的基本类型做不同的数据处理
@@ -172,7 +172,7 @@ public class GlintRequestUtil {
     public static void addHttpRequestTag(@NonNull GlintHttpBuilder builder) {
         List<String> hostActivityNameList = GlintHttpDispatcher.getInstance().mHostActivityNameList;
         List<String> hostFragmentNameList = GlintHttpDispatcher.getInstance().mHostFragmentNameList;
-        if (builder.listener != null && !builder.freeLife && hostActivityNameList != null) {
+        if (builder.listener != null && !builder.freeLife) {
             StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
             //前面4个是没用的
             if (stackTraceElements.length > 15) {
