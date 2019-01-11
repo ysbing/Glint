@@ -7,8 +7,8 @@ import android.text.TextUtils;
 import com.ysbing.glint.base.BaseHttpModule;
 import com.ysbing.glint.base.Glint;
 import com.ysbing.glint.base.GlintResultBean;
-import com.ysbing.glint.util.Md5Util;
 import com.ysbing.glint.util.GlintRequestUtil;
+import com.ysbing.glint.util.Md5Util;
 import com.ysbing.glint.util.UiKit;
 
 import java.io.File;
@@ -183,7 +183,7 @@ public class GlintDownloadCore implements Runnable {
                 // 将数据装载到ResultBean中
                 GlintResultBean<File> result = new GlintResultBean<>();
                 result.setData(mBuilder.saveFile);
-                if (mBuilder.checkMd5 && contentMd5 != null && !TextUtils.equals(Md5Util.getMD5Str(mBuilder.saveFile), contentMd5)) {
+                if (mBuilder.checkMd5 && contentMd5 != null && !TextUtils.equals(Md5Util.getMD5Str(tempFile), contentMd5)) {
                     result.setRunStatus(Glint.ResultStatus.STATUS_ERROR);
                 } else {
                     boolean statusResult = true;
