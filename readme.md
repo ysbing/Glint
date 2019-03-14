@@ -22,7 +22,7 @@ Glint is an Http standard protocol framework based on OkHttp for Android. It sup
 Maven is recommended:
 ``` gradle
 Dependencies {
-    Implementation 'com.ysbing.glint:glint:1.0.0'
+    implementation 'com.ysbing.glint:glint:1.0.1'
     // replace "1.0.10" with any available version
 }
 ```

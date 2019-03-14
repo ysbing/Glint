@@ -19,7 +19,7 @@ Glint是Android实现基于OkHttp的Http标准协议框架，支持接口请求�
 推荐使用 Maven：
 ``` gradle
 dependencies {
-    implementation 'com.ysbing.glint:glint:1.0.0'
+    implementation 'com.ysbing.glint:glint:1.0.1'
     // replace "1.0.10" with any available version
 }
 ```
