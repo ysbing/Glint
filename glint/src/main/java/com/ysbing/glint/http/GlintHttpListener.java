@@ -33,9 +33,9 @@ public abstract class GlintHttpListener<T> {
     }
 
     /**
-     * 当http状态码200，千帆状态码非200的回调
+     * 当http状态码200，状态码非200的回调
      *
-     * @param status 千帆状态码
+     * @param status 状态码
      * @param errMsg 对应的错误提示
      * @throws Exception
      */

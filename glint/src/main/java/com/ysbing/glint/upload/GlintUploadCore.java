@@ -260,8 +260,8 @@ public class GlintUploadCore<T> implements Runnable {
                 return;
             }
             try {
-                // 如果是200，则是正确的千帆成功返回
-                // 如果是0，则是正确的非千帆成功返回
+                // 如果是200，则是正确的成功返回
+                // 如果是0，则是正确的非成功返回
                 mBuilder.listener.onResponse(response);
                 if (response.getRunStatus() == Glint.ResultStatus.STATUS_SUCCESS || response.getRunStatus() == Glint.ResultStatus.STATUS_NORMAL) {
                     mBuilder.listener.onSuccess(response.getData());

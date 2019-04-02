@@ -124,8 +124,8 @@ final class GlintDownloadProgressListener {
                         }
                         for (GlintDownloadListener listener : mListeners) {
                             try {
-                                // 如果是200，则是正确的千帆成功返回
-                                // 如果是0，则是正确的非千帆成功返回
+                                // 如果是200，则是正确的成功返回
+                                // 如果是0，则是正确的非成功返回
                                 listener.onSuccess(new File(filePath));
                             } catch (Exception e) {
                                 listener.onDownloadFail(e, null);

@@ -28,7 +28,7 @@ import java.util.Map;
 import okhttp3.Response;
 
 /**
- * 千帆网络请求的数据转换工具类
+ * 网络请求的数据转换工具类
  * 里面方法中的参数Type{@link Type}的获取方法:
  * Type mTypeOfT = new TypeToken<GlintResultBean<UserBean>>() {
  * }.getType();
@@ -58,7 +58,7 @@ public class GlintRequestUtil {
     }
 
     /**
-     * 千帆的成功反序列化
+     * 的成功反序列化
      *
      * @param gson    序列号工具
      * @param jsonStr json字符串
@@ -73,7 +73,7 @@ public class GlintRequestUtil {
     }
 
     /**
-     * 千帆的成功反序列化
+     * 的成功反序列化
      *
      * @param gson        序列号工具
      * @param jsonElement jsonElement
@@ -120,7 +120,7 @@ public class GlintRequestUtil {
     }
 
     /**
-     * 千帆的错误时反序列化
+     * 的错误时反序列化
      *
      * @param jsonElement jsonElement
      * @return 拿到关键节点，转换成String类型并返回

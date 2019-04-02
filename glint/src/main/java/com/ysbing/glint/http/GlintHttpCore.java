@@ -30,7 +30,7 @@ import okhttp3.internal.Util;
 import okio.ByteString;
 
 /**
- * 根据千帆网络请求封装的解析类
+ * 根据网络请求封装的解析类
  * 在状态200的时候Message是数据
  * 非200的时候是String类型的错误消息
  *
@@ -365,8 +365,8 @@ public class GlintHttpCore<T> implements Runnable {
                 return;
             }
             try {
-                // 如果是200，则是正确的千帆成功返回
-                // 如果是0，则是正确的非千帆成功返回
+                // 如果是200，则是正确的成功返回
+                // 如果是0，则是正确的非成功返回
                 mBuilder.listener.onResponse(response);
                 if (response.getRunStatus() == Glint.ResultStatus.STATUS_SUCCESS || response.getRunStatus() == Glint.ResultStatus.STATUS_NORMAL) {
                     mBuilder.listener.onSuccess(response.getData());
