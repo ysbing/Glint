@@ -3,89 +3,101 @@ package com.ysbing.samples.glint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
-import com.ysbing.glint.download.GlintDownload;
-import com.ysbing.glint.download.GlintDownloadListener;
-import com.ysbing.glint.http.GlintHttp;
-import com.ysbing.glint.http.GlintHttpListener;
-import com.ysbing.glint.socket.GlintSocket;
-import com.ysbing.glint.socket.GlintSocketListener;
-import com.ysbing.glint.upload.GlintUpload;
-import com.ysbing.glint.upload.GlintUploadListener;
+import com.ysbing.samples.glint.download.DownloadRequestActivity;
+import com.ysbing.samples.glint.http.HttpModuleRequestActivity;
+import com.ysbing.samples.glint.http.HttpRequestActivity;
+import com.ysbing.samples.glint.upload.UploadRequestActivity;
+import com.ysbing.samples.glint.websocket.WebSocketRequestActivity;
 
-import java.io.File;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
+    private class MyViewHolder extends RecyclerView.ViewHolder {
+        private MyViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
+    }
+
+    private class MyData {
+        private String title;
+        private String des;
+
+        private MyData(String title, String des) {
+            this.title = title;
+            this.des = des;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String url = "https://www.sojson.com/open/api/lunar/json.shtml?date=2017-05-27";
-        TreeMap<String, String> params = new TreeMap<>();
-        params.put("date", "2018-10-01");
-        GlintHttp.get(url, params).using(MyHttpModule.get()).execute(new GlintHttpListener<LunarBean>() {
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        recyclerView.setAdapter(new RecyclerView.Adapter<MyViewHolder>() {
+            private List<MyData> data = new ArrayList<MyData>() {{
+                add(new MyData("普通请求", "请求一个HTML页面"));
+                add(new MyData("复杂请求", "自定义Module，可对OkHttp加拦截器和自定义解析数据等配置"));
+                add(new MyData("上传请求", "将本地文件上传到服务器"));
+                add(new MyData("下载请求", "下载文件到本地"));
+                add(new MyData("WebSocket请求", "监听Socket事件"));
+            }};
+
+            @NonNull
             @Override
-            public void onSuccess(@NonNull LunarBean result) throws Exception {
-                super.onSuccess(result);
+            public MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+                View itemView = LayoutInflater.from(MainActivity.this)
+                        .inflate(R.layout.item_list, viewGroup, false);
+                return new MyViewHolder(itemView);
             }
 
             @Override
-            public void onFail(@NonNull Throwable error) {
-                super.onFail(error);
+            public void onBindViewHolder(@NonNull final MyViewHolder myViewHolder, int i) {
+                TextView titleView = myViewHolder.itemView.findViewById(R.id.tv_title);
+                TextView contentView = myViewHolder.itemView.findViewById(R.id.tv_content);
+                titleView.setText(data.get(i).title);
+                contentView.setText(data.get(i).des);
+                myViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        switch (myViewHolder.getAdapterPosition()) {
+                            case 0:
+                                HttpRequestActivity.startAction(MainActivity.this);
+                                break;
+                            case 1:
+                                HttpModuleRequestActivity.startAction(MainActivity.this);
+                                break;
+                            case 2:
+                                UploadRequestActivity.startAction(MainActivity.this);
+                                break;
+                            case 3:
+                                DownloadRequestActivity.startAction(MainActivity.this);
+                                break;
+                            case 4:
+                                WebSocketRequestActivity.startAction(MainActivity.this);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
             }
 
             @Override
-            public void onFinish() {
-                super.onFinish();
+            public int getItemCount() {
+                return data.size();
             }
         });
-
-        GlintDownload.download("https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk", new File(getExternalCacheDir(), "mobileqq_android.apk")).execute(new GlintDownloadListener() {
-            @Override
-            public void onProgress(long bytesWritten, long contentLength, long speed, int percent) throws Exception {
-                super.onProgress(bytesWritten, contentLength, speed, percent);
-            }
-
-            @Override
-            public void onSuccess(@NonNull File result) throws Exception {
-                super.onSuccess(result);
-            }
-        });
-        GlintUpload.upload("https://www.qq.com/", new File(getExternalCacheDir(), "mobileqq_android.apk")).execute(new GlintUploadListener<String>() {
-            @Override
-            public void onProgress(long bytesWritten, long contentLength, long speed, int percent) throws Exception {
-                super.onProgress(bytesWritten, contentLength, speed, percent);
-            }
-
-            @Override
-            public void onSuccess(@NonNull String result) throws Exception {
-                super.onSuccess(result);
-            }
-        });
-        GlintSocket.sendIO("http://socket.test", "cmd", "我是消息").execute(new GlintSocketListener<String>() {
-            @Override
-            public void onProcess(@NonNull String result) throws Exception {
-                super.onProcess(result);
-            }
-
-            @Override
-            public void onError(@NonNull String error) {
-                super.onError(error);
-            }
-        });
-        GlintSocket.on("http://socket.test", "cmd").execute(new GlintSocketListener<String>() {
-            @Override
-            public void onProcess(@NonNull String result) throws Exception {
-                super.onProcess(result);
-            }
-
-            @Override
-            public void onError(@NonNull String error) {
-                super.onError(error);
-            }
-        });
-        GlintSocket.off("http://socket.test", "cmd");
     }
 }

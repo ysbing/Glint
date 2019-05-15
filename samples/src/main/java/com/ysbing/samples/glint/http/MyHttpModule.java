@@ -1,4 +1,4 @@
-package com.ysbing.samples.glint;
+package com.ysbing.samples.glint.http;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,10 +13,10 @@ import com.ysbing.glint.base.GlintResultBean;
 import com.ysbing.glint.util.GlintRequestUtil;
 
 import java.lang.reflect.Type;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 
 public class MyHttpModule extends BaseHttpModule {
@@ -37,7 +37,7 @@ public class MyHttpModule extends BaseHttpModule {
     }
 
     @Override
-    public boolean getHeaders(@NonNull Map<String, String> originalHeader) throws Exception {
+    public boolean getHeaders(@NonNull Headers.Builder originalHeader) throws Exception {
         return super.getHeaders(originalHeader);
     }
 
@@ -63,8 +63,8 @@ public class MyHttpModule extends BaseHttpModule {
         JsonElement dataElement = jsonObj.get("data");
         // 如果为空，可能是标准的json，不用判断状态码，直接解析
         if (statusElement == null) {
-            result.setRunStatus(Glint.ResultStatus.STATUS_NORMAL);
-            result.setData(GlintRequestUtil.<T>standardDeserialize(gson, jsonObj, typeOfT));
+            result.setRunStatus(Glint.ResultStatus.STATUS_ERROR);
+            result.setMessage(GlintRequestUtil.errorDeserialize(jsonObj));
         } else {
             // status节点，这里判断出是否请求成功
             int status = statusElement.getAsInt();

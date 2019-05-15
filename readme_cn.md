@@ -47,7 +47,7 @@ GlintHttp.get(url).execute(new GlintHttpListener<String>() {
 
 ``` xml
 <meta-data
- android:name="com.ysbing.samples.glint.MyHttpModule"
+ android:name="com.ysbing.samples.glint.http.MyHttpModule"
  android:value="GlintHttpModule"
  />
 ```

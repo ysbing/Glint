@@ -50,7 +50,7 @@ The first way: declare the Module as a generic module of the Application in the 
 
 ``` xml
 <meta-data
- Android:name="com.ysbing.samples.glint.MyHttpModule"
+ Android:name="com.ysbing.samples.glint.http.MyHttpModule"
  Android:value="GlintHttpModule"
  />
 ```

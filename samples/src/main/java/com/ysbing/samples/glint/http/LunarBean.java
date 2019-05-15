@@ -1,4 +1,4 @@
-package com.ysbing.samples.glint;
+package com.ysbing.samples.glint.http;
 
 import java.util.List;
 

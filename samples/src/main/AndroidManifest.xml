@@ -9,13 +9,38 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".SplashActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".http.HttpRequestActivity"
+            android:label="普通请求"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".http.HttpModuleRequestActivity"
+            android:label="复杂请求"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".upload.UploadRequestActivity"
+            android:label="上传请求"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".download.DownloadRequestActivity"
+            android:label="下载请求"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".websocket.WebSocketRequestActivity"
+            android:label="WebSocket请求"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>
