@@ -26,11 +26,11 @@ public final class GlintDownloadBuilder<E extends BaseHttpModule> extends GlintB
      */
     public File saveFile;
     /**
-     * 用于暂停和恢复，
+     * 断点续传，用于暂停和恢复
      */
     public long range;
     /**
-     * 用于暂停和恢复，
+     * 文件长度
      */
     public long contentLength;
     /**

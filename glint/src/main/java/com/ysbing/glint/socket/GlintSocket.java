@@ -131,7 +131,7 @@ public class GlintSocket {
             }
             switch (builder.requestType) {
                 case SEND:
-                    builder.cmdId = String.valueOf(builder.sendId);
+                    builder.cmdId += GlintSocket.class.getSimpleName() + builder.sendId;
                     GlintSocketDispatcher.getInstance().send(builder);
                     break;
                 case PUSH_LISTENER:

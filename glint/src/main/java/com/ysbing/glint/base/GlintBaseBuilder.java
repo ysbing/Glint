@@ -5,11 +5,11 @@ import android.support.annotation.NonNull;
 
 import com.google.gson.JsonObject;
 
-import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import okhttp3.Headers;
 
 /**
  * 请求基础参数配置
@@ -45,7 +45,7 @@ public class GlintBaseBuilder<E extends BaseHttpModule> {
     /**
      * 头部信息
      */
-    public Map<String, String> header = new HashMap<>();
+    public Headers.Builder headers = new Headers.Builder();
     /**
      * 额外添加的cookie
      */

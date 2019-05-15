@@ -7,8 +7,9 @@ import com.ysbing.glint.base.BaseHttpModule;
 import com.ysbing.glint.util.GlintRequestUtil;
 
 import java.io.File;
-import java.util.Map;
 import java.util.TreeMap;
+
+import okhttp3.Headers;
 
 /**
  * 下载请求的入口
@@ -44,8 +45,8 @@ public final class GlintDownload extends GlintDownloadCore {
     /**
      * 额外设置的header,出去登录相关的
      */
-    public GlintDownload setHeader(@NonNull Map<String, String> header) {
-        mBuilder.header = header;
+    public GlintDownload setHeader(@NonNull Headers.Builder headers) {
+        mBuilder.headers = headers;
         return this;
     }
 

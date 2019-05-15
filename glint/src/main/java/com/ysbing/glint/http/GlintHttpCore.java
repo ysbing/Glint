@@ -109,30 +109,32 @@ public class GlintHttpCore<T> implements Runnable {
             // 将数据装载到ResultBean中
             GlintResultBean<T> result = new GlintResultBean<>();
             T t;
-            JsonElement jsonEl;
             // 如果不是标准的json数据，直接将整个数据返回
             if (mBuilder.notJson) {
-                String responseStr = responseBody.string(); //这里是强转泛型的方法
+                String responseStr = responseBody.string();
                 //noinspection unchecked,ConstantConditions
                 t = (T) Primitives.wrap(String.class.getSuperclass()).cast(responseStr);
-                result.setRunStatus(Glint.ResultStatus.STATUS_NORMAL);
+                result.setRunStatus(Glint.ResultStatus.STATUS_SUCCESS);
+                result.setResponseStr(responseStr);
+                result.setHeaders(response.headers());
                 result.setData(t);
                 deliverResponse(result);
                 return;
-            } else {
-                JsonReader jsonReader = new JsonReader(new InputStreamReader(responseBody.byteStream(), Util.UTF_8));
-                //开始对数据做解析处理
-                JsonParser parser = new JsonParser();
-                try {
-                    jsonEl = parser.parse(jsonReader);
-                } catch (JsonSyntaxException e) {
-                    deliverError(e);
-                    return;
-                }
-                String responseStr = jsonEl.toString();
-                result.setResponseStr(responseStr);
-                result.setHeaders(response.headers());
             }
+            JsonReader jsonReader = new JsonReader(new InputStreamReader(responseBody.byteStream(), Util.UTF_8));
+            //开始对数据做解析处理
+            JsonParser parser = new JsonParser();
+            JsonElement jsonEl;
+            try {
+                jsonEl = parser.parse(jsonReader);
+            } catch (JsonSyntaxException e) {
+                deliverError(e);
+                return;
+            }
+            String responseStr = jsonEl.toString();
+            result.setResponseStr(responseStr);
+            result.setHeaders(response.headers());
+
 
             // 转换成Json对象
             JsonObject jsonObj = jsonEl.getAsJsonObject();
@@ -146,8 +148,8 @@ public class GlintHttpCore<T> implements Runnable {
             } else if (GLINT != null && !mBuilder.standardDeserialize) {
                 GLINT.customDeserialize(result, jsonObj, sGson, mTypeOfT);
             } else {
-                result.setRunStatus(Glint.ResultStatus.STATUS_NORMAL);
-                result.setData(GlintRequestUtil.<T>standardDeserialize(sGson, jsonObj, mTypeOfT));
+                result.setRunStatus(Glint.ResultStatus.STATUS_SUCCESS);
+                result.setData(GlintRequestUtil.<T>successDeserialize(sGson, jsonObj, mTypeOfT));
             }
             deliverResponse(result);
         } catch (Exception e) {
@@ -178,7 +180,7 @@ public class GlintHttpCore<T> implements Runnable {
             //这里是强转泛型的方法
             //noinspection unchecked,ConstantConditions
             T t = (T) Primitives.wrap(String.class.getSuperclass()).cast(responseStr);
-            result.setRunStatus(Glint.ResultStatus.STATUS_NORMAL);
+            result.setRunStatus(Glint.ResultStatus.STATUS_SUCCESS);
             result.setData(t);
             return result;
         } else {
@@ -202,8 +204,8 @@ public class GlintHttpCore<T> implements Runnable {
         } else if (GLINT != null && !mBuilder.standardDeserialize) {
             GLINT.customDeserialize(result, jsonObj, sGson, mTypeOfT);
         } else {
-            result.setRunStatus(Glint.ResultStatus.STATUS_NORMAL);
-            result.setData(GlintRequestUtil.<T>standardDeserialize(sGson, jsonObj, mTypeOfT));
+            result.setRunStatus(Glint.ResultStatus.STATUS_SUCCESS);
+            result.setData(GlintRequestUtil.<T>successDeserialize(sGson, jsonObj, mTypeOfT));
         }
         return result;
     }
@@ -228,7 +230,7 @@ public class GlintHttpCore<T> implements Runnable {
             }
             //传递头部到自定义Module
             for (BaseHttpModule baseHttpModule : mBuilder.customGlintModule) {
-                boolean transitive = baseHttpModule.getHeaders(mBuilder.header);
+                boolean transitive = baseHttpModule.getHeaders(mBuilder.headers);
                 if (!transitive) {
                     break;
                 }
@@ -252,7 +254,7 @@ public class GlintHttpCore<T> implements Runnable {
         } else if (GLINT != null) {
             GLINT.onBuilderCreated(mBuilder.clone());
             GLINT.getParams(mBuilder.params);
-            GLINT.getHeaders(mBuilder.header);
+            GLINT.getHeaders(mBuilder.headers);
             BaseHttpModule.UrlResult urlResult = GLINT.getUrl(mBuilder.url);
             newUrl = urlResult.url;
         } else {
@@ -304,9 +306,7 @@ public class GlintHttpCore<T> implements Runnable {
                     .url(newUrl);
         }
         // 添加头部到请求里
-        for (String name : mBuilder.header.keySet()) {
-            okHttpRequestBuilder.addHeader(name, mBuilder.header.get(name));
-        }
+        okHttpRequestBuilder.headers(mBuilder.headers.build());
         if (!TextUtils.isEmpty(mBuilder.cookie)) {
             okHttpRequestBuilder.addHeader("Cookie", mBuilder.cookie);
         }
@@ -368,13 +368,13 @@ public class GlintHttpCore<T> implements Runnable {
                 // 如果是200，则是正确的成功返回
                 // 如果是0，则是正确的非成功返回
                 mBuilder.listener.onResponse(response);
-                if (response.getRunStatus() == Glint.ResultStatus.STATUS_SUCCESS || response.getRunStatus() == Glint.ResultStatus.STATUS_NORMAL) {
+                if (response.getRunStatus() == Glint.ResultStatus.STATUS_SUCCESS) {
                     mBuilder.listener.onSuccess(response.getData());
                 } else {
                     mBuilder.listener.onError(response.getStatus(), response.getMessage());
                     mBuilder.listener.onErrorOrFail();
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (mBuilder.listener != null) {
                     mBuilder.listener.onFail(e);
                     mBuilder.listener.onErrorOrFail();

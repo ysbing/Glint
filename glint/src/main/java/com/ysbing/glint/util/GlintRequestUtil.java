@@ -38,51 +38,31 @@ import okhttp3.Response;
 public class GlintRequestUtil {
 
     /**
-     * 标准化反序列化
+     * 成功响应体反序列化
      *
-     * @param gson    序列号工具
-     * @param jsonObj json对象
-     * @param type    转换的类型
-     * @param <T>     转换的对象类型
-     * @return 转换后的对象
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T standardDeserialize(@NonNull Gson gson, @NonNull JsonObject jsonObj, @NonNull Type type) {
-        T t;
-        if (type.equals(String.class)) {
-            t = (T) Primitives.wrap(String.class.getSuperclass()).cast(jsonObj.toString());
-        } else {
-            t = gson.fromJson(jsonObj, type);
-        }
-        return t;
-    }
-
-    /**
-     * 的成功反序列化
-     *
-     * @param gson    序列号工具
+     * @param context 序列号工具
      * @param jsonStr json字符串
      * @param type    转换的类型
      * @param <T>     转换的对象类型
      * @return 转换后的对象
      */
-    public static <T> T successDeserialize(@NonNull Gson gson, @NonNull String jsonStr, @NonNull Type type) {
+    public static <T> T successDeserialize(@NonNull Gson context, @NonNull String jsonStr, @NonNull Type type) {
         JsonParser parser = new JsonParser();
         JsonElement jsonEl = parser.parse(jsonStr);
-        return successDeserialize(gson, jsonEl, type);
+        return successDeserialize(context, jsonEl, type);
     }
 
     /**
-     * 的成功反序列化
+     * 成功响应体反序列化
      *
-     * @param gson        序列号工具
+     * @param context     序列号工具
      * @param jsonElement jsonElement
      * @param type        转换的类型
      * @param <T>         转换的对象类型
      * @return 转换后的对象
      */
     @SuppressWarnings({"unchecked", "ConstantConditions"})
-    public static <T> T successDeserialize(@NonNull Gson gson, @NonNull JsonElement jsonElement, @NonNull Type type) {
+    public static <T> T successDeserialize(@NonNull Gson context, @NonNull JsonElement jsonElement, @NonNull Type type) {
         T t;
         // 需要根据不同的基本类型做不同的数据处理
         if (type.equals(String.class)) {
@@ -114,13 +94,13 @@ public class GlintRequestUtil {
         } else if (type.equals(JsonArray.class)) {
             t = (T) Primitives.wrap(JsonArray.class.getSuperclass()).cast(jsonElement.getAsJsonArray());
         } else {
-            t = gson.fromJson(jsonElement, type);
+            t = context.fromJson(jsonElement, type);
         }
         return t;
     }
 
     /**
-     * 的错误时反序列化
+     * 错误时反序列化
      *
      * @param jsonElement jsonElement
      * @return 拿到关键节点，转换成String类型并返回

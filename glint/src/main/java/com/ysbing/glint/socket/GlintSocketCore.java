@@ -281,6 +281,12 @@ public class GlintSocketCore {
         if (TextUtils.isEmpty(cmdId)) {
             disconnect();
         } else {
+            for (String key : mAsyncListeners.keySet()) {
+                if (key.contains(GlintSocket.class.getSimpleName())
+                        && cmdId != null && key.contains(cmdId)) {
+                    mAsyncListeners.remove(key);
+                }
+            }
             mAsyncListeners.remove(cmdId);
         }
     }

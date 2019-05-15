@@ -8,8 +8,9 @@ import android.text.TextUtils;
 import com.ysbing.glint.base.BaseHttpModule;
 
 import java.io.File;
-import java.util.Map;
 import java.util.TreeMap;
+
+import okhttp3.Headers;
 
 /**
  * 上传请求的入口
@@ -62,8 +63,8 @@ public final class GlintUpload extends GlintUploadCore {
     /**
      * 额外设置的header,出去登录相关的
      */
-    public GlintUpload setHeader(@NonNull Map<String, String> header) {
-        mBuilder.header = header;
+    public GlintUpload setHeader(@NonNull Headers.Builder headers) {
+        mBuilder.headers = headers;
         return this;
     }
 

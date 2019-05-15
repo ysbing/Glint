@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.TreeMap;
 
+import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 
 /**
@@ -54,7 +55,7 @@ public abstract class BaseHttpModule {
         return true;
     }
 
-    public boolean getHeaders(@NonNull Map<String, String> originalHeader) throws Exception {
+    public boolean getHeaders(@NonNull Headers.Builder originalHeader) throws Exception {
         return true;
     }
 

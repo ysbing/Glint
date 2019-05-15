@@ -26,7 +26,7 @@ public class IOWebSocketTransport {
         } else if ("http".equals(url.getScheme()) || "https".equals(url.getScheme())) {
             GlintHttp.get(url.toString() + "/socket.io/1/").signature(false).notJson(true).mainThread(false).execute(new GlintHttpListener<String>() {
                 @Override
-                public void onSuccess(@NonNull String result) throws Exception {
+                public void onSuccess(@NonNull String result) throws Throwable {
                     super.onSuccess(result);
                     String[] data = result.split(":");
                     String sessionId = data[0];

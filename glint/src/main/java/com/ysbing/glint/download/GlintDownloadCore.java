@@ -12,7 +12,6 @@ import com.ysbing.glint.util.Md5Util;
 import com.ysbing.glint.util.UiKit;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 
@@ -35,6 +34,10 @@ public class GlintDownloadCore implements Runnable {
     protected GlintDownloadBuilder<BaseHttpModule> mBuilder;
     private okhttp3.Call mOkHttpCall;
     private boolean mPaused;
+    /**
+     * 是否首次拼接
+     */
+    private boolean isFirst;
     private boolean mFinish;
     private GlintDownloadProgressListener mProgressListener;
     final GlintDownloadInfo mDownloadInfo = new GlintDownloadInfo();
@@ -91,6 +94,7 @@ public class GlintDownloadCore implements Runnable {
             public void run() {
                 for (GlintDownloadListener listener : mBuilder.listeners) {
                     listener.onCancel();
+                    listener.onFinish();
                 }
                 //将回调设置为空，就不会回调到上层
                 mBuilder.listeners.clear();
@@ -124,6 +128,9 @@ public class GlintDownloadCore implements Runnable {
             }
             final String fileName = GlintRequestUtil.getHeaderFileName(response);
             long contentLength = responseBody.contentLength();
+            if (mBuilder.contentLength == contentLength) {
+                mBuilder.range = 0;
+            }
             if (mBuilder.range == 0) {
                 mBuilder.contentLength = contentLength;
             }
@@ -145,7 +152,7 @@ public class GlintDownloadCore implements Runnable {
                             try {
                                 listener.onProgress(mBuilder.saveFile.length(), mBuilder.saveFile.length(), mBuilder.saveFile.length(), 100);
                                 listener.onSuccess(mBuilder.saveFile);
-                            } catch (Exception e) {
+                            } catch (Throwable e) {
                                 listener.onDownloadFail(e, finalResponse);
                             } finally {
                                 listener.onFinish();
@@ -170,6 +177,7 @@ public class GlintDownloadCore implements Runnable {
                 //noinspection ResultOfMethodCallIgnored
                 tempFile.delete();
             }
+            isFirst = mBuilder.range == 0;
             RandomAccessFile sink = new RandomAccessFile(tempFile, "rwd");
             sink.seek(mBuilder.range);
             while (!mPaused && (len = source.read(buffer)) != -1) {
@@ -196,9 +204,10 @@ public class GlintDownloadCore implements Runnable {
                         result.setRunStatus(Glint.ResultStatus.STATUS_ERROR);
                     }
                 }
-                deliverResponse(result);
+                isFirst = true;
+                deliverResponse(result, response);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (!mPaused) {
                 deliverError(e, response);
             }
@@ -206,14 +215,14 @@ public class GlintDownloadCore implements Runnable {
             if (response != null) {
                 response.close();
             }
-            if (!mPaused) {
+            if (!mPaused && isFirst) {
                 GlintDownloadDispatcher.getInstance().finished(this);
                 mFinish = true;
             }
         }
     }
 
-    private void prepare() throws Exception {
+    private void prepare() throws Throwable {
         final boolean isResume = mBuilder.range > 0;
         UiKit.runOnMainThreadAsync(new Runnable() {
             @Override
@@ -234,7 +243,7 @@ public class GlintDownloadCore implements Runnable {
             }
             //传递头部到自定义Module
             for (BaseHttpModule baseHttpModule : mBuilder.customGlintModule) {
-                boolean transitive = baseHttpModule.getHeaders(mBuilder.header);
+                boolean transitive = baseHttpModule.getHeaders(mBuilder.headers);
                 if (!transitive) {
                     break;
                 }
@@ -258,7 +267,7 @@ public class GlintDownloadCore implements Runnable {
         } else if (GLINT != null) {
             GLINT.onBuilderCreated(mBuilder.clone());
             GLINT.getParams(mBuilder.params);
-            GLINT.getHeaders(mBuilder.header);
+            GLINT.getHeaders(mBuilder.headers);
             BaseHttpModule.UrlResult urlResult = GLINT.getUrl(mBuilder.url);
             newUrl = urlResult.url;
         } else {
@@ -288,12 +297,10 @@ public class GlintDownloadCore implements Runnable {
             requestUrl = newUrl + "?" + params;
         }
         okhttp3.Request.Builder okHttpRequestBuilder = new okhttp3.Request.Builder()
-                .header("RANGE", "bytes=" + mBuilder.range + "-")
                 .url(mBuilder.url = requestUrl);
         //添加头部到请求里
-        for (String name : mBuilder.header.keySet()) {
-            okHttpRequestBuilder.addHeader(name, mBuilder.header.get(name));
-        }
+        okHttpRequestBuilder.headers(mBuilder.headers.build());
+        okHttpRequestBuilder.header("RANGE", "bytes=" + mBuilder.range + "-");
         if (!TextUtils.isEmpty(mBuilder.cookie)) {
             okHttpRequestBuilder.addHeader("Cookie", mBuilder.cookie);
         }
@@ -302,7 +309,7 @@ public class GlintDownloadCore implements Runnable {
         mPaused = false;
     }
 
-    private void deliverProgress(long bytesWritten, long contentLength) throws Exception {
+    private void deliverProgress(long bytesWritten, long contentLength) {
         if (mBuilder.listeners.isEmpty() || mProgressListener == null) {
             return;
         }
@@ -312,25 +319,76 @@ public class GlintDownloadCore implements Runnable {
         mProgressListener.onProgressChanged(mDownloadInfo.bytesWritten, mDownloadInfo.contentLength);
     }
 
-    private void deliverResponse(GlintResultBean<File> response) {
+    private void deliverResponse(GlintResultBean<File> response, Response httpResponse) {
         if (mBuilder.listeners.isEmpty()) {
             return;
         }
-        if (mProgressListener != null) {
-            if (response.getRunStatus() == Glint.ResultStatus.STATUS_SUCCESS) {
-                mProgressListener.onProgressSuccess(response.getData().getAbsolutePath());
-            } else {
-                mProgressListener.onProgressError(new FileNotFoundException("The file md5 was incorrectly verified. Please try again."), null);
+        if (mBuilder.mainThread) {
+            UiKit.runOnMainThreadAsync(new ResultRunnable(response, httpResponse));
+        } else {
+            new ResultRunnable(response, httpResponse).run();
+        }
+    }
+
+    private void deliverError(@NonNull Throwable error, @Nullable Response response) {
+        if (mBuilder.listeners.isEmpty()) {
+            return;
+        }
+        if (mBuilder.mainThread) {
+            UiKit.runOnMainThreadAsync(new ErrorRunnable(error, response));
+        } else {
+            new ErrorRunnable(error, response).run();
+        }
+    }
+
+    private class ResultRunnable implements Runnable {
+        private final GlintResultBean<File> response;
+        private final Response httpResponse;
+
+        ResultRunnable(GlintResultBean<File> response, Response httpResponse) {
+            this.response = response;
+            this.httpResponse = httpResponse;
+        }
+
+        @Override
+        public synchronized void run() {
+            if (mProgressListener != null) {
+                String filePath = response.getData().getAbsolutePath();
+                for (GlintDownloadListener listener : mBuilder.listeners) {
+                    try {
+                        listener.onSuccess(new File(filePath));
+                    } catch (Throwable e) {
+                        listener.onDownloadFail(e, httpResponse);
+                    }
+                }
+                if (!mPaused && isFirst) {
+                    for (GlintDownloadListener listener : mBuilder.listeners) {
+                        listener.onFinish();
+                    }
+                }
             }
         }
     }
 
-    private void deliverError(@NonNull Exception error, @Nullable Response response) {
-        if (mBuilder.listeners.isEmpty()) {
-            return;
+    private class ErrorRunnable implements Runnable {
+        private final Throwable error;
+        private final Response httpResponse;
+
+        ErrorRunnable(Throwable error, Response httpResponse) {
+            this.error = error;
+            this.httpResponse = httpResponse;
         }
-        if (mProgressListener != null) {
-            mProgressListener.onProgressError(error, response);
+
+        @Override
+        public synchronized void run() {
+            for (GlintDownloadListener listener : mBuilder.listeners) {
+                listener.onDownloadFail(error, httpResponse);
+            }
+            if (!mPaused && isFirst) {
+                for (GlintDownloadListener listener : mBuilder.listeners) {
+                    listener.onFinish();
+                }
+            }
         }
     }
 }

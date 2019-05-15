@@ -24,7 +24,7 @@ public abstract class GlintDownloadListener extends GlintHttpListener<File> {
      * @param resultBean 封装结果类
      */
     @Override
-    final public void onResponse(@NonNull GlintResultBean<File> resultBean) throws Exception {
+    final public void onResponse(@NonNull GlintResultBean<File> resultBean) throws Throwable {
         super.onResponse(resultBean);
     }
 
@@ -39,7 +39,7 @@ public abstract class GlintDownloadListener extends GlintHttpListener<File> {
     }
 
     @Override
-    public final void onError(int status, @NonNull String errMsg) throws Exception {
+    public final void onError(int status, @NonNull String errMsg) throws Throwable {
         super.onError(status, errMsg);
     }
 

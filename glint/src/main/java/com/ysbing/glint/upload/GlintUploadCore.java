@@ -8,12 +8,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.Primitives;
+import com.google.gson.stream.JsonReader;
 import com.ysbing.glint.base.BaseHttpModule;
 import com.ysbing.glint.base.Glint;
 import com.ysbing.glint.base.GlintResultBean;
 import com.ysbing.glint.util.GlintRequestUtil;
 import com.ysbing.glint.util.UiKit;
 
+import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.Map;
 
@@ -22,6 +24,7 @@ import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
+import okhttp3.internal.Util;
 
 
 /**
@@ -93,32 +96,35 @@ public class GlintUploadCore<T> implements Runnable {
             if (responseBody == null) {
                 return;
             }
-            String responseStr = responseBody.string();
             // 将数据装载到ResultBean中
             GlintResultBean<T> result = new GlintResultBean<>();
             T t;
-            result.setResponseStr(responseStr);
-            result.setHeaders(response.headers());
 
             // 如果不是标准的json数据，直接将整个数据返回
             if (mBuilder.notJson) {
-                //这里是强转泛型的方法
-                //noinspection unchecked
+                String responseStr = responseBody.string();
+                //noinspection unchecked,ConstantConditions
                 t = (T) Primitives.wrap(String.class.getSuperclass()).cast(responseStr);
-                result.setRunStatus(Glint.ResultStatus.STATUS_NORMAL);
+                result.setRunStatus(Glint.ResultStatus.STATUS_SUCCESS);
+                result.setResponseStr(responseStr);
+                result.setHeaders(response.headers());
                 result.setData(t);
                 deliverResponse(result);
                 return;
             }
             //开始对数据做解析处理
+            JsonReader jsonReader = new JsonReader(new InputStreamReader(responseBody.byteStream(), Util.UTF_8));
             JsonParser parser = new JsonParser();
             JsonElement jsonEl;
             try {
-                jsonEl = parser.parse(responseStr);
+                jsonEl = parser.parse(jsonReader);
             } catch (JsonSyntaxException e) {
                 deliverError(e);
                 return;
             }
+            String responseStr = jsonEl.toString();
+            result.setResponseStr(responseStr);
+            result.setHeaders(response.headers());
 
             // 转换成Json对象
             JsonObject jsonObj = jsonEl.getAsJsonObject();
@@ -132,8 +138,8 @@ public class GlintUploadCore<T> implements Runnable {
             } else if (GLINT != null && !mBuilder.standardDeserialize) {
                 GLINT.customDeserialize(result, jsonObj, gson, mTypeOfT);
             } else {
-                result.setRunStatus(Glint.ResultStatus.STATUS_NORMAL);
-                result.setData(GlintRequestUtil.<T>standardDeserialize(gson, jsonObj, mTypeOfT));
+                result.setRunStatus(Glint.ResultStatus.STATUS_SUCCESS);
+                result.setData(GlintRequestUtil.<T>successDeserialize(gson, jsonObj, mTypeOfT));
             }
             deliverResponse(result);
         } catch (Exception e) {
@@ -164,7 +170,7 @@ public class GlintUploadCore<T> implements Runnable {
             }
             //传递头部到自定义Module
             for (BaseHttpModule baseHttpModule : mBuilder.customGlintModule) {
-                boolean transitive = baseHttpModule.getHeaders(mBuilder.header);
+                boolean transitive = baseHttpModule.getHeaders(mBuilder.headers);
                 if (!transitive) {
                     break;
                 }
@@ -188,7 +194,7 @@ public class GlintUploadCore<T> implements Runnable {
         } else if (GLINT != null) {
             GLINT.onBuilderCreated(mBuilder.clone());
             GLINT.getParams(mBuilder.params);
-            GLINT.getHeaders(mBuilder.header);
+            GLINT.getHeaders(mBuilder.headers);
             BaseHttpModule.UrlResult urlResult = GLINT.getUrl(mBuilder.url);
             newUrl = urlResult.url;
         } else {
@@ -216,9 +222,7 @@ public class GlintUploadCore<T> implements Runnable {
                 .post(body)
                 .url(newUrl);
         //添加头部到请求里
-        for (String name : mBuilder.header.keySet()) {
-            okHttpRequestBuilder.addHeader(name, mBuilder.header.get(name));
-        }
+        okHttpRequestBuilder.headers(mBuilder.headers.build());
         if (!TextUtils.isEmpty(mBuilder.cookie)) {
             okHttpRequestBuilder.addHeader("Cookie", mBuilder.cookie);
         }
@@ -263,13 +267,13 @@ public class GlintUploadCore<T> implements Runnable {
                 // 如果是200，则是正确的成功返回
                 // 如果是0，则是正确的非成功返回
                 mBuilder.listener.onResponse(response);
-                if (response.getRunStatus() == Glint.ResultStatus.STATUS_SUCCESS || response.getRunStatus() == Glint.ResultStatus.STATUS_NORMAL) {
+                if (response.getRunStatus() == Glint.ResultStatus.STATUS_SUCCESS) {
                     mBuilder.listener.onSuccess(response.getData());
                 } else {
                     mBuilder.listener.onError(response.getStatus(), response.getMessage());
                     mBuilder.listener.onErrorOrFail();
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (mBuilder.listener != null) {
                     mBuilder.listener.onFail(e);
                     mBuilder.listener.onErrorOrFail();

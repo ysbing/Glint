@@ -12,8 +12,9 @@ import com.ysbing.glint.base.GlintResultBean;
 import com.ysbing.glint.util.GlintRequestUtil;
 
 import java.lang.reflect.Type;
-import java.util.Map;
 import java.util.TreeMap;
+
+import okhttp3.Headers;
 
 /**
  * 接口请求的入口
@@ -58,8 +59,8 @@ public final class GlintHttp extends GlintHttpCore {
     /**
      * 额外设置的header,出去登录相关的
      */
-    public GlintHttp setHeader(@NonNull Map<String, String> header) {
-        mBuilder.header = header;
+    public GlintHttp setHeader(@NonNull Headers.Builder headers) {
+        mBuilder.headers = headers;
         return this;
     }
 

@@ -15,10 +15,10 @@ import com.ysbing.glint.http.GlintHttpActivityLifecycleCallbacks;
 import com.ysbing.glint.util.ContextHelper;
 
 import java.lang.reflect.Type;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 
 /**
@@ -117,7 +117,7 @@ public final class Glint extends BaseHttpModule {
     }
 
     @Override
-    public boolean getHeaders(@NonNull Map<String, String> originalHeader) throws Exception {
+    public boolean getHeaders(@NonNull Headers.Builder originalHeader) throws Exception {
         return mClazzBaseHttpModule == null || mClazzBaseHttpModule.getHeaders(originalHeader);
     }
 
@@ -152,10 +152,6 @@ public final class Glint extends BaseHttpModule {
     }
 
     public enum ResultStatus {
-        /**
-         * 普通状态，不使用解析的状态
-         */
-        STATUS_NORMAL,
         /**
          * 解析成功的状态
          */
