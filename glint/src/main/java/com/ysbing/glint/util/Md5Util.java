@@ -5,10 +5,9 @@ import android.support.annotation.NonNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.MessageDigest;
 
-import okhttp3.internal.Util;
 import okio.BufferedSource;
+import okio.ByteString;
 import okio.Okio;
 
 /**
@@ -22,66 +21,50 @@ public class Md5Util {
      * 获取字符串的MD5
      *
      * @param str 要计算的字符串
-     * @return 该文件的MD%
+     * @return 该文件的MD5
      */
     public static String getMD5Str(@NonNull String str) {
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance("MD5");
-            digest.update(str.getBytes(Util.UTF_8));
-        } catch (Exception e) {
+        return ByteString.encodeUtf8(str).md5().hex();
+    }
+
+    /**
+     * 获取字节数组的MD5
+     *
+     * @param bytes 要计算的字节数组
+     * @return 该文件的MD5
+     */
+    public static String getMD5Str(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) {
             return "";
         }
-        return bytesToHexString(digest.digest());
+        return ByteString.of(bytes).md5().hex();
     }
 
     /**
      * 获取单个文件的MD5值
      *
      * @param file 要计算的文件
-     * @return 该文件的MD%
+     * @return 该文件的MD5
      */
     public static String getMD5Str(@NonNull File file) {
         if (!file.isFile()) {
             return "";
         }
-        MessageDigest digest;
         BufferedSource source = null;
-        byte buffer[] = new byte[1024];
-        int len;
         try {
-            digest = MessageDigest.getInstance("MD5");
             source = Okio.buffer(Okio.source(file));
-            while ((len = source.read(buffer, 0, 1024)) != -1) {
-                digest.update(buffer, 0, len);
-            }
-        } catch (Exception e) {
-            return "";
+            return source.readByteString().md5().hex();
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
-            if (source != null) {
-                try {
+            try {
+                if (source != null) {
                     source.close();
-                } catch (IOException ignored) {
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-        return bytesToHexString(digest.digest());
+        return "";
     }
-
-    public static String bytesToHexString(byte[] src) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (src == null || src.length <= 0) {
-            return "";
-        }
-        for (byte b : src) {
-            int v = b & 0xFF;
-            String hv = Integer.toHexString(v);
-            if (hv.length() < 2) {
-                stringBuilder.append(0);
-            }
-            stringBuilder.append(hv);
-        }
-        return stringBuilder.toString();
-    }
-
 }
