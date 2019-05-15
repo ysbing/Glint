@@ -19,8 +19,7 @@ Glint是Android实现基于OkHttp的Http标准协议框架，支持接口请求�
 推荐使用 Maven：
 ``` gradle
 dependencies {
-    implementation 'com.ysbing.glint:glint:1.0.1'
-    // replace "1.0.10" with any available version
+    implementation 'com.ysbing.glint:glint:1.1.0'
 }
 ```
 
@@ -33,7 +32,7 @@ dependencies {
 String url = "https://www.sojson.com/open/api/lunar/json.shtml?date=2017-05-27";
 GlintHttp.get(url).execute(new GlintHttpListener<String>() {
     @Override
-    public void onSuccess(@NonNull String result) throws Exception {
+    public void onSuccess(@NonNull String result) throws Throwable {
         super.onSuccess(result);
     }
 });
@@ -67,7 +66,7 @@ TreeMap<String, String> params = new TreeMap<>();
 params.put("date", "2018-10-01");
 GlintHttp.get(url, params).using(MyHttpModule.get()).execute(new GlintHttpListener<LunarBean>() {
     @Override
-    public void onSuccess(@NonNull LunarBean result) throws Exception {
+    public void onSuccess(@NonNull LunarBean result) throws Throwable {
         super.onSuccess(result);
     }
 
@@ -185,7 +184,7 @@ GlintDownload.download("https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_and
     }
 
     @Override
-    public void onSuccess(@NonNull File result) throws Exception {
+    public void onSuccess(@NonNull File result) throws Throwable {
         super.onSuccess(result);
     }
 });
@@ -199,12 +198,12 @@ GlintDownload.download("https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_and
 ```
 GlintUpload.upload("https://www.qq.com/", new File(getExternalCacheDir(), "mobileqq_android.apk")).execute(new GlintUploadListener<String>() {
     @Override
-    public void onProgress(long bytesWritten, long contentLength, long speed, int percent) throws Exception {
+    public void onProgress(long bytesWritten, long contentLength, long speed, int percent) throws Throwable {
         super.onProgress(bytesWritten, contentLength, speed, percent);
     }
 
     @Override
-    public void onSuccess(@NonNull String result) throws Exception {
+    public void onSuccess(@NonNull String result) throws Throwable {
         super.onSuccess(result);
     }
 });
@@ -217,7 +216,7 @@ GlintUpload.upload("https://www.qq.com/", new File(getExternalCacheDir(), "mobil
 ``` java
 GlintSocket.sendIO(url, "cmd", "我是消息").execute(new GlintSocketListener<String>() {
     @Override
-    public void onProcess(@NonNull String result) throws Exception {
+    public void onProcess(@NonNull String result) throws Throwable {
         super.onProcess(result);
     }
 
@@ -235,7 +234,7 @@ GlintSocket.sendIO(url, "cmd", "我是消息").execute(new GlintSocketListener<S
 ``` java
 GlintSocket.on("http://socket.test", "cmd").execute(new GlintSocketListener<String>() {
     @Override
-    public void onProcess(@NonNull String result) throws Exception {
+    public void onProcess(@NonNull String result) throws Throwable {
         super.onProcess(result);
     }
 

@@ -22,8 +22,7 @@ Glint is an Http standard protocol framework based on OkHttp for Android. It sup
 Maven is recommended:
 ``` gradle
 Dependencies {
-    implementation 'com.ysbing.glint:glint:1.0.1'
-    // replace "1.0.10" with any available version
+    implementation 'com.ysbing.glint:glint:1.1.0'
 }
 ```
 
@@ -36,7 +35,7 @@ The most basic request:
 String url = "https://www.sojson.com/open/api/lunar/json.shtml?date=2017-05-27";
 GlintHttp.get(url).execute(new GlintHttpListener<String>() {
     @Override
-    Public void onSuccess(@NonNull String result) throws Exception {
+    Public void onSuccess(@NonNull String result) throws Throwable {
         super.onSuccess(result);
     }
 });
@@ -70,7 +69,7 @@ TreeMap<String, String> params = new TreeMap<>();
 Params.put("date", "2018-10-01");
 GlintHttp.get(url, params).using(MyHttpModule.get()).execute(new GlintHttpListener<LunarBean>() {
     @Override
-    Public void onSuccess(@NonNull LunarBean result) throws Exception {
+    Public void onSuccess(@NonNull LunarBean result) throws Throwable {
         super.onSuccess(result);
     }
 
@@ -187,7 +186,7 @@ GlintDownload.download("https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_and
     }
 
     @Override
-    Public void onSuccess(@NonNull File result) throws Exception {
+    Public void onSuccess(@NonNull File result) throws Throwable {
         super.onSuccess(result);
     }
 });
@@ -206,7 +205,7 @@ GlintUpload.upload("https://www.qq.com/", new File(getExternalCacheDir(), "mobil
     }
 
     @Override
-    Public void onSuccess(@NonNull String result) throws Exception {
+    Public void onSuccess(@NonNull String result) throws Throwable {
         super.onSuccess(result);
     }
 });
