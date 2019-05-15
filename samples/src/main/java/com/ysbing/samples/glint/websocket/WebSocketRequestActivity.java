@@ -67,7 +67,7 @@ public class WebSocketRequestActivity extends AppCompatActivity {
     private void socketOn() {
         GlintSocket.on(SOCKET_URL, SOCKET_CMD_ON).execute(new GlintSocketListener<String>() {
             @Override
-            public void onProcess(@NonNull String result) throws Exception {
+            public void onProcess(@NonNull String result) throws Throwable {
                 super.onProcess(result);
                 text += "socketOn,result:" + result + "\n\n";
                 updateEditText();
@@ -85,7 +85,7 @@ public class WebSocketRequestActivity extends AppCompatActivity {
     private void socketSend() {
         GlintSocket.send(SOCKET_URL, SOCKET_CMD_SEND, "我是消息").execute(new GlintSocketListener<String>() {
             @Override
-            public void onProcess(@NonNull String result) throws Exception {
+            public void onProcess(@NonNull String result) throws Throwable {
                 super.onProcess(result);
                 text += "socketSend,result:" + result + "\n\n";
                 updateEditText();

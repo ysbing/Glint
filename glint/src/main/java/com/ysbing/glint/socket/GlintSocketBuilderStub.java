@@ -65,7 +65,7 @@ public class GlintSocketBuilderStub<T> extends GlintSocketBuilderWrapper.Stub {
                     try {
                         //noinspection ConstantConditions
                         builder.listener.onProcess(t);
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         onError(e.getMessage());
                     }
                 }

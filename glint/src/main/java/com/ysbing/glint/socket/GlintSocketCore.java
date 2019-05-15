@@ -89,7 +89,7 @@ public class GlintSocketCore {
                     if (listener != null) {
                         try {
                             listener.onProcess(String.valueOf(GlintSocket.ERROR_NET));
-                        } catch (Exception ignored) {
+                        } catch (Throwable ignored) {
                         }
                     }
                 }
@@ -123,7 +123,7 @@ public class GlintSocketCore {
                     if (listener != null) {
                         try {
                             listener.onProcess("");
-                        } catch (Exception ignored) {
+                        } catch (Throwable ignored) {
                         }
                     }
                 }
@@ -188,7 +188,7 @@ public class GlintSocketCore {
                     if (listener != null) {
                         try {
                             listener.onProcess("");
-                        } catch (Exception ignored) {
+                        } catch (Throwable ignored) {
                         }
                     }
                 }
@@ -202,7 +202,7 @@ public class GlintSocketCore {
                     if (listener != null) {
                         try {
                             listener.onProcess(String.valueOf(GlintSocket.ERROR_EXCEPTION));
-                        } catch (Exception ignored) {
+                        } catch (Throwable ignored) {
                         }
                     }
                 }
@@ -236,7 +236,7 @@ public class GlintSocketCore {
             if (listener != null) {
                 try {
                     listener.onProcess(body);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     listener.onError(e.getMessage());
                 }
             }

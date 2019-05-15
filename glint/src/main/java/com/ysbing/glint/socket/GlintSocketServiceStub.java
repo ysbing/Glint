@@ -75,7 +75,7 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
         sparseArrayCompat.append(builderWrapper.getTag(), builderWrapper);
         socket.on(builderWrapper.getCmdId(), new GlintSocketListener<String>() {
             @Override
-            public void onProcess(@NonNull String result) throws Exception {
+            public void onProcess(@NonNull String result) throws Throwable {
                 super.onProcess(result);
                 Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> maps = mOnPushListeners.get(builderWrapper.getUrl());
                 SparseArrayCompat<GlintSocketBuilderWrapper> wrappers = maps.get(builderWrapper.getCmdId());
