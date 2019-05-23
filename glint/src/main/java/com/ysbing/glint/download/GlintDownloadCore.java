@@ -33,12 +33,12 @@ public class GlintDownloadCore implements Runnable {
     private static OkHttpClient sClient;
     protected GlintDownloadBuilder<BaseHttpModule> mBuilder;
     private okhttp3.Call mOkHttpCall;
-    private boolean mPaused;
+    private boolean mPaused = false;
     /**
      * 是否首次拼接
      */
-    private boolean isFirst;
-    private boolean mFinish;
+    private boolean isFirst = true;
+    private boolean mFinish = false;
     private GlintDownloadProgressListener mProgressListener;
     final GlintDownloadInfo mDownloadInfo = new GlintDownloadInfo();
 
