@@ -5,9 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.TextView;
 
 import com.ysbing.glint.socket.GlintSocket;
 import com.ysbing.glint.socket.GlintSocketListener;
@@ -20,7 +21,7 @@ public class WebSocketRequestActivity extends AppCompatActivity {
     private static final String SOCKET_URL = "http://socket.test";
     private static final String SOCKET_CMD_ON = "on_cmd";
     private static final String SOCKET_CMD_SEND = "msg_cmd";
-    private EditText mEditTextContent;
+    private TextView mTextView;
     private String text = "";
 
     public static void startAction(Activity activity) {
@@ -34,7 +35,8 @@ public class WebSocketRequestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_websocket_request);
         Button buttonOn = findViewById(R.id.btn_on);
         Button buttonSend = findViewById(R.id.btn_send);
-        mEditTextContent = findViewById(R.id.et_content);
+        mTextView = findViewById(R.id.et_content);
+        mTextView.setMovementMethod(ScrollingMovementMethod.getInstance());
         buttonOn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -69,14 +71,14 @@ public class WebSocketRequestActivity extends AppCompatActivity {
             @Override
             public void onProcess(@NonNull String result) throws Throwable {
                 super.onProcess(result);
-                text += "socketOn,result:" + result + "\n\n";
+                text = "socketOn,result:" + result + "\n\n" + text;
                 updateEditText();
             }
 
             @Override
             public void onError(@NonNull String error) {
                 super.onError(error);
-                text += "socketOn,error:" + error + "\n\n";
+                text = "socketOn,error:" + error + "\n\n" + text;
                 updateEditText();
             }
         });
@@ -87,22 +89,21 @@ public class WebSocketRequestActivity extends AppCompatActivity {
             @Override
             public void onProcess(@NonNull String result) throws Throwable {
                 super.onProcess(result);
-                text += "socketSend,result:" + result + "\n\n";
+                text = "socketSend,result:" + result + "\n\n" + text;
                 updateEditText();
             }
 
             @Override
             public void onError(@NonNull String error) {
                 super.onError(error);
-                text += "socketSend,error:" + error + "\n\n";
+                text = "socketSend,error:" + error + "\n\n" + text;
                 updateEditText();
             }
         });
     }
 
     private void updateEditText() {
-        mEditTextContent.setText(text);
-        mEditTextContent.setSelection(text.length());
+        mTextView.setText(text);
     }
 }
 
