@@ -24,8 +24,6 @@ import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
-import okhttp3.internal.Util;
-
 
 /**
  * 上传核心类
@@ -43,7 +41,8 @@ public class GlintUploadCore<T> implements Runnable {
 
     static {
         if (GLINT != null) {
-            client = GLINT.onOkHttpBuildCreate(Glint.GlintType.UPLOAD, new OkHttpClient.Builder()).build();
+            client = GLINT.onOkHttpBuildCreate(Glint.GlintType.UPLOAD, new OkHttpClient.Builder())
+                    .build();
         } else {
             client = new OkHttpClient.Builder().build();
         }
@@ -113,7 +112,8 @@ public class GlintUploadCore<T> implements Runnable {
                 return;
             }
             //开始对数据做解析处理
-            JsonReader jsonReader = new JsonReader(new InputStreamReader(responseBody.byteStream(), Util.UTF_8));
+            JsonReader jsonReader = new JsonReader(
+                    new InputStreamReader(responseBody.byteStream(), GlintRequestUtil.UTF_8));
             JsonParser parser = new JsonParser();
             JsonElement jsonEl;
             try {
@@ -130,7 +130,8 @@ public class GlintUploadCore<T> implements Runnable {
             JsonObject jsonObj = jsonEl.getAsJsonObject();
             if (!mBuilder.customGlintModule.isEmpty()) {
                 for (BaseHttpModule baseHttpModule : mBuilder.customGlintModule) {
-                    boolean transitive = baseHttpModule.customDeserialize(result, jsonObj, gson, mTypeOfT);
+                    boolean transitive =
+                            baseHttpModule.customDeserialize(result, jsonObj, gson, mTypeOfT);
                     if (!transitive) {
                         break;
                     }

@@ -19,9 +19,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okhttp3.internal.Util;
 import okio.BufferedSource;
-
 
 /**
  * 下载核心类
@@ -44,7 +42,9 @@ public class GlintDownloadCore implements Runnable {
 
     static {
         if (GLINT != null) {
-            sClient = GLINT.onOkHttpBuildCreate(Glint.GlintType.DOWNLOAD, new OkHttpClient.Builder()).build();
+            sClient =
+                    GLINT.onOkHttpBuildCreate(Glint.GlintType.DOWNLOAD, new OkHttpClient.Builder())
+                            .build();
         } else {
             sClient = new OkHttpClient.Builder().build();
         }
@@ -143,14 +143,17 @@ public class GlintDownloadCore implements Runnable {
             if (mBuilder.saveFile.isDirectory()) {
                 mBuilder.saveFile = new File(mBuilder.saveFile, fileName);
             }
-            if (contentMd5 != null && TextUtils.equals(Md5Util.getMD5Str(mBuilder.saveFile), contentMd5)) {
+            if (contentMd5 != null &&
+                    TextUtils.equals(Md5Util.getMD5Str(mBuilder.saveFile), contentMd5)) {
                 final Response finalResponse = response;
                 UiKit.runOnMainThreadAsync(new Runnable() {
                     @Override
                     public void run() {
                         for (GlintDownloadListener listener : mBuilder.listeners) {
                             try {
-                                listener.onProgress(mBuilder.saveFile.length(), mBuilder.saveFile.length(), mBuilder.saveFile.length(), 100);
+                                listener.onProgress(mBuilder.saveFile.length(),
+                                        mBuilder.saveFile.length(),
+                                        mBuilder.saveFile.length(), 100);
                                 listener.onSuccess(mBuilder.saveFile);
                             } catch (Throwable e) {
                                 listener.onDownloadFail(e, finalResponse);
@@ -169,7 +172,8 @@ public class GlintDownloadCore implements Runnable {
             if (!mBuilder.saveFile.getParentFile().exists()) {
                 boolean makeDirResult = mBuilder.saveFile.getParentFile().mkdirs();
                 if (!makeDirResult) {
-                    throw new RuntimeException("Create folder failed, please manually create:" + mBuilder.saveFile.getParentFile());
+                    throw new RuntimeException("Create folder failed, please manually create:" +
+                            mBuilder.saveFile.getParentFile());
                 }
             } else if (mBuilder.range == 0) {
                 //noinspection ResultOfMethodCallIgnored
@@ -191,7 +195,8 @@ public class GlintDownloadCore implements Runnable {
                 // 将数据装载到ResultBean中
                 GlintResultBean<File> result = new GlintResultBean<>();
                 result.setData(mBuilder.saveFile);
-                if (mBuilder.checkMd5 && contentMd5 != null && !TextUtils.equals(Md5Util.getMD5Str(tempFile), contentMd5)) {
+                if (mBuilder.checkMd5 && contentMd5 != null &&
+                        !TextUtils.equals(Md5Util.getMD5Str(tempFile), contentMd5)) {
                     result.setRunStatus(Glint.ResultStatus.STATUS_ERROR);
                 } else {
                     boolean statusResult = true;
@@ -199,7 +204,9 @@ public class GlintDownloadCore implements Runnable {
                         statusResult = mBuilder.saveFile.delete();
                     }
                     if (statusResult) {
-                        result.setRunStatus(tempFile.renameTo(mBuilder.saveFile) ? Glint.ResultStatus.STATUS_SUCCESS : Glint.ResultStatus.STATUS_ERROR);
+                        result.setRunStatus(tempFile.renameTo(mBuilder.saveFile) ?
+                                Glint.ResultStatus.STATUS_SUCCESS :
+                                Glint.ResultStatus.STATUS_ERROR);
                     } else {
                         result.setRunStatus(Glint.ResultStatus.STATUS_ERROR);
                     }
@@ -276,11 +283,11 @@ public class GlintDownloadCore implements Runnable {
         MediaType contentType = MediaType.parse(mBuilder.mimeType);
         String paramsEncoding;
         if (contentType == null) {
-            paramsEncoding = Util.UTF_8.name();
+            paramsEncoding = GlintRequestUtil.UTF_8.name();
         } else {
-            Charset charset = contentType.charset(Util.UTF_8);
+            Charset charset = contentType.charset(GlintRequestUtil.UTF_8);
             if (charset == null) {
-                paramsEncoding = Util.UTF_8.name();
+                paramsEncoding = GlintRequestUtil.UTF_8.name();
             } else {
                 paramsEncoding = charset.name();
             }
@@ -316,7 +323,8 @@ public class GlintDownloadCore implements Runnable {
         mDownloadInfo.bytesWritten = bytesWritten;
         mDownloadInfo.contentLength = contentLength;
         mDownloadInfo.progress = contentLength > 0 ? (int) (bytesWritten * 100 / contentLength) : 0;
-        mProgressListener.onProgressChanged(mDownloadInfo.bytesWritten, mDownloadInfo.contentLength);
+        mProgressListener
+                .onProgressChanged(mDownloadInfo.bytesWritten, mDownloadInfo.contentLength);
     }
 
     private void deliverResponse(GlintResultBean<File> response, Response httpResponse) {

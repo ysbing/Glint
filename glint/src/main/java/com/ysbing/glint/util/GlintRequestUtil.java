@@ -1,6 +1,5 @@
 package com.ysbing.glint.util;
 
-
 import android.app.Activity;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -21,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +37,8 @@ import okhttp3.Response;
  */
 public class GlintRequestUtil {
 
+    public static final Charset UTF_8 = Charset.forName("UTF-8");
+
     /**
      * 成功响应体反序列化
      *
@@ -46,7 +48,8 @@ public class GlintRequestUtil {
      * @param <T>     转换的对象类型
      * @return 转换后的对象
      */
-    public static <T> T successDeserialize(@NonNull Gson context, @NonNull String jsonStr, @NonNull Type type) {
+    public static <T> T successDeserialize(@NonNull Gson context, @NonNull String jsonStr,
+                                           @NonNull Type type) {
         JsonParser parser = new JsonParser();
         JsonElement jsonEl = parser.parse(jsonStr);
         return successDeserialize(context, jsonEl, type);
@@ -62,7 +65,9 @@ public class GlintRequestUtil {
      * @return 转换后的对象
      */
     @SuppressWarnings({"unchecked", "ConstantConditions"})
-    public static <T> T successDeserialize(@NonNull Gson context, @NonNull JsonElement jsonElement, @NonNull Type type) {
+    public static <T> T successDeserialize(@NonNull Gson context,
+                                           @NonNull JsonElement jsonElement,
+                                           @NonNull Type type) {
         T t;
         // 需要根据不同的基本类型做不同的数据处理
         if (type.equals(String.class)) {
@@ -70,12 +75,15 @@ public class GlintRequestUtil {
                 JsonArray tempObj = (JsonArray) jsonElement;
                 if (tempObj.size() == 1 && tempObj.get(0).isJsonPrimitive()) {
                     //数量为1的时候，用getAs，否则用toString
-                    t = (T) Primitives.wrap(String.class.getSuperclass()).cast(jsonElement.getAsString());
+                    t = (T) Primitives.wrap(String.class.getSuperclass())
+                            .cast(jsonElement.getAsString());
                 } else {
-                    t = (T) Primitives.wrap(String.class.getSuperclass()).cast(jsonElement.toString());
+                    t = (T) Primitives.wrap(String.class.getSuperclass())
+                            .cast(jsonElement.toString());
                 }
             } else if (jsonElement.isJsonPrimitive()) {
-                t = (T) Primitives.wrap(String.class.getSuperclass()).cast(jsonElement.getAsString());
+                t = (T) Primitives.wrap(String.class.getSuperclass())
+                        .cast(jsonElement.getAsString());
             } else {
                 t = (T) Primitives.wrap(String.class.getSuperclass()).cast(jsonElement.toString());
             }
@@ -90,9 +98,11 @@ public class GlintRequestUtil {
         } else if (type.equals(Double.class)) {
             t = (T) Primitives.wrap(Double.class.getSuperclass()).cast(jsonElement.getAsDouble());
         } else if (type.equals(JsonObject.class)) {
-            t = (T) Primitives.wrap(JsonObject.class.getSuperclass()).cast(jsonElement.getAsJsonObject());
+            t = (T) Primitives.wrap(JsonObject.class.getSuperclass())
+                    .cast(jsonElement.getAsJsonObject());
         } else if (type.equals(JsonArray.class)) {
-            t = (T) Primitives.wrap(JsonArray.class.getSuperclass()).cast(jsonElement.getAsJsonArray());
+            t = (T) Primitives.wrap(JsonArray.class.getSuperclass())
+                    .cast(jsonElement.getAsJsonArray());
         } else {
             t = context.fromJson(jsonElement, type);
         }
@@ -126,7 +136,8 @@ public class GlintRequestUtil {
     /**
      * Converts <code>params</code> into an application/x-www-form-urlencoded encoded string.
      */
-    public static String encodeParameters(@NonNull Map<String, String> params, @NonNull String paramsEncoding) {
+    public static String encodeParameters(@NonNull Map<String, String> params,
+                                          @NonNull String paramsEncoding) {
         StringBuilder encodedParams = new StringBuilder();
         try {
             for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -158,11 +169,13 @@ public class GlintRequestUtil {
             if (stackTraceElements.length > 15) {
                 stackTraceElements = Arrays.copyOfRange(stackTraceElements, 4, 15);
             } else {
-                stackTraceElements = Arrays.copyOfRange(stackTraceElements, 4, stackTraceElements.length);
+                stackTraceElements =
+                        Arrays.copyOfRange(stackTraceElements, 4, stackTraceElements.length);
             }
             for (StackTraceElement stackTraceElement : stackTraceElements) {
                 if (hostActivityNameList.contains(stackTraceElement.getClassName())) {
-                    Activity activity = UiStack.getInstance().getActivity(stackTraceElement.getClassName());
+                    Activity activity =
+                            UiStack.getInstance().getActivity(stackTraceElement.getClassName());
                     if (activity != null) {
                         builder.hostHashCode = activity.hashCode();
                     }
@@ -171,7 +184,8 @@ public class GlintRequestUtil {
                     }
                     break;
                 } else if (hostFragmentNameList.contains(stackTraceElement.getClassName())) {
-                    Fragment fragment = UiStack.getInstance().getFragment(stackTraceElement.getClassName());
+                    Fragment fragment =
+                            UiStack.getInstance().getFragment(stackTraceElement.getClassName());
                     if (fragment != null) {
                         builder.hostHashCode = fragment.hashCode();
                     }
@@ -202,8 +216,9 @@ public class GlintRequestUtil {
     public static String getHeaderFileName(@NonNull Response response) {
         String fileName = "";
         String dispositionHeader = response.header("Content-Disposition");
-        if (!TextUtils.isEmpty(dispositionHeader)) {
-            dispositionHeader = dispositionHeader.replace("attachment;filename=", "").replace("filename*=utf-8", "");
+        if (dispositionHeader != null && !TextUtils.isEmpty(dispositionHeader)) {
+            dispositionHeader = dispositionHeader.replace("attachment;filename=", "")
+                    .replace("filename*=utf-8", "");
             String[] strings = dispositionHeader.split("; ");
             if (strings.length > 1) {
                 dispositionHeader = strings[1].replace("filename=", "");
@@ -218,13 +233,19 @@ public class GlintRequestUtil {
         return fileName;
     }
 
-    public static Type getListenerType(Class<?> tClass) {
+    public static Type getListenerType(Class<?> clazz) {
+        Class<?> tClass = clazz;
         Type superClass;
         do {
             superClass = tClass.getGenericSuperclass();
             tClass = tClass.getSuperclass();
         }
-        while (tClass != null && !ParameterizedType.class.isAssignableFrom(superClass.getClass()));
-        return ((ParameterizedType) superClass).getActualTypeArguments()[0];
+        while (tClass != null && superClass != null &&
+                !ParameterizedType.class.isAssignableFrom(superClass.getClass()));
+        if (superClass instanceof ParameterizedType) {
+            return ((ParameterizedType) superClass).getActualTypeArguments()[0];
+        } else {
+            return clazz.getGenericSuperclass();
+        }
     }
 }

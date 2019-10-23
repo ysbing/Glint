@@ -26,7 +26,6 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
-import okhttp3.internal.Util;
 import okio.ByteString;
 
 /**
@@ -39,7 +38,9 @@ import okio.ByteString;
 public class GlintHttpCore<T> implements Runnable {
     private static final Glint GLINT = Glint.getsInstance();
     private static OkHttpClient sClient;
-    private static final Cache sCache = new Cache(new File(ContextHelper.getAppContext().getCacheDir(), "glint_http"), 1024 * 1024 * 10);
+    private static final Cache sCache =
+            new Cache(new File(ContextHelper.getAppContext().getCacheDir(), "glint_http"),
+                    1024 * 1024 * 10);
     private static final Gson sGson = new Gson();
 
     /**
@@ -51,7 +52,8 @@ public class GlintHttpCore<T> implements Runnable {
 
     static {
         if (GLINT != null) {
-            sClient = GLINT.onOkHttpBuildCreate(Glint.GlintType.HTTP, new OkHttpClient.Builder()).build();
+            sClient = GLINT.onOkHttpBuildCreate(Glint.GlintType.HTTP, new OkHttpClient.Builder())
+                    .build();
         } else {
             sClient = new OkHttpClient.Builder().build();
         }
@@ -121,7 +123,8 @@ public class GlintHttpCore<T> implements Runnable {
                 deliverResponse(result);
                 return;
             }
-            JsonReader jsonReader = new JsonReader(new InputStreamReader(responseBody.byteStream(), Util.UTF_8));
+            JsonReader jsonReader = new JsonReader(
+                    new InputStreamReader(responseBody.byteStream(), GlintRequestUtil.UTF_8));
             //开始对数据做解析处理
             JsonParser parser = new JsonParser();
             JsonElement jsonEl;
@@ -140,7 +143,8 @@ public class GlintHttpCore<T> implements Runnable {
             JsonObject jsonObj = jsonEl.getAsJsonObject();
             if (!mBuilder.customGlintModule.isEmpty()) {
                 for (BaseHttpModule baseHttpModule : mBuilder.customGlintModule) {
-                    boolean transitive = baseHttpModule.customDeserialize(result, jsonObj, sGson, mTypeOfT);
+                    boolean transitive =
+                            baseHttpModule.customDeserialize(result, jsonObj, sGson, mTypeOfT);
                     if (!transitive) {
                         break;
                     }
@@ -184,7 +188,8 @@ public class GlintHttpCore<T> implements Runnable {
             result.setData(t);
             return result;
         } else {
-            JsonReader jsonReader = new JsonReader(new InputStreamReader(responseBody.byteStream(), Util.UTF_8));
+            JsonReader jsonReader = new JsonReader(
+                    new InputStreamReader(responseBody.byteStream(), GlintRequestUtil.UTF_8));
             //开始对数据做解析处理
             JsonParser parser = new JsonParser();
             jsonEl = parser.parse(jsonReader);
@@ -196,7 +201,8 @@ public class GlintHttpCore<T> implements Runnable {
         JsonObject jsonObj = jsonEl.getAsJsonObject();
         if (!mBuilder.customGlintModule.isEmpty()) {
             for (BaseHttpModule baseHttpModule : mBuilder.customGlintModule) {
-                boolean transitive = baseHttpModule.customDeserialize(result, jsonObj, sGson, mTypeOfT);
+                boolean transitive =
+                        baseHttpModule.customDeserialize(result, jsonObj, sGson, mTypeOfT);
                 if (!transitive) {
                     break;
                 }
@@ -263,11 +269,11 @@ public class GlintHttpCore<T> implements Runnable {
         MediaType contentType = MediaType.parse(mBuilder.mimeType);
         String paramsEncoding;
         if (contentType == null) {
-            paramsEncoding = Util.UTF_8.name();
+            paramsEncoding = GlintRequestUtil.UTF_8.name();
         } else {
-            Charset charset = contentType.charset(Util.UTF_8);
+            Charset charset = contentType.charset(GlintRequestUtil.UTF_8);
             if (charset == null) {
-                paramsEncoding = Util.UTF_8.name();
+                paramsEncoding = GlintRequestUtil.UTF_8.name();
             } else {
                 paramsEncoding = charset.name();
             }
@@ -295,7 +301,8 @@ public class GlintHttpCore<T> implements Runnable {
                         .url(newUrl);
             }
         } else if (mBuilder.jsonParams != null) {
-            RequestBody requestBodyPost = RequestBody.create(contentType, ByteString.encodeUtf8(mBuilder.jsonParams.toString()));
+            RequestBody requestBodyPost = RequestBody
+                    .create(contentType, ByteString.encodeUtf8(mBuilder.jsonParams.toString()));
             okHttpRequestBuilder = new okhttp3.Request.Builder()
                     .post(requestBodyPost)
                     .url(newUrl);

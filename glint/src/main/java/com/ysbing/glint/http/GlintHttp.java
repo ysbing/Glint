@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import com.ysbing.glint.base.BaseHttpModule;
 import com.ysbing.glint.base.GlintResultBean;
 import com.ysbing.glint.util.GlintRequestUtil;
@@ -41,14 +40,16 @@ public final class GlintHttp extends GlintHttpCore {
     }
 
     public static GlintHttp post(@NonNull String url, @NonNull JsonObject jsonParams) {
-        return new GlintHttp(Method.POST, url, new TreeMap<String, String>(), jsonParams).setMimeType("application/json; charset=utf-8");
+        return new GlintHttp(Method.POST, url, new TreeMap<String, String>(), jsonParams)
+                .setMimeType("application/json; charset=utf-8");
     }
 
     public GlintHttp(int method, @NonNull String url) {
         this(method, url, new TreeMap<String, String>(), null);
     }
 
-    public GlintHttp(int method, @NonNull String url, @NonNull TreeMap<String, String> params, @Nullable JsonObject jsonParams) {
+    public GlintHttp(int method, @NonNull String url, @NonNull TreeMap<String, String> params,
+                     @Nullable JsonObject jsonParams) {
         mBuilder = createBuilder();
         mBuilder.method = method;
         mBuilder.url = url;
@@ -245,7 +246,7 @@ public final class GlintHttp extends GlintHttpCore {
      * @param classOfT 泛型类
      */
     public <T> GlintResultBean<T> executeSync(@NonNull Class<T> classOfT) throws Exception {
-        return executeSync(TypeToken.get(classOfT).getType());
+        return executeSync(GlintRequestUtil.getListenerType(classOfT));
     }
 
     /**
