@@ -4,7 +4,6 @@ import android.text.TextUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.Primitives;
@@ -140,20 +139,19 @@ public class GlintHttpCore<T> implements Runnable {
 
 
             // 转换成Json对象
-            JsonObject jsonObj = jsonEl.getAsJsonObject();
             if (!mBuilder.customGlintModule.isEmpty()) {
                 for (BaseHttpModule baseHttpModule : mBuilder.customGlintModule) {
                     boolean transitive =
-                            baseHttpModule.customDeserialize(result, jsonObj, sGson, mTypeOfT);
+                            baseHttpModule.customDeserialize(result, jsonEl, sGson, mTypeOfT);
                     if (!transitive) {
                         break;
                     }
                 }
             } else if (GLINT != null && !mBuilder.standardDeserialize) {
-                GLINT.customDeserialize(result, jsonObj, sGson, mTypeOfT);
+                GLINT.customDeserialize(result, jsonEl, sGson, mTypeOfT);
             } else {
                 result.setRunStatus(Glint.ResultStatus.STATUS_SUCCESS);
-                result.setData(GlintRequestUtil.<T>successDeserialize(sGson, jsonObj, mTypeOfT));
+                result.setData(GlintRequestUtil.<T>successDeserialize(sGson, jsonEl, mTypeOfT));
             }
             deliverResponse(result);
         } catch (Exception e) {
@@ -198,20 +196,19 @@ public class GlintHttpCore<T> implements Runnable {
             result.setHeaders(response.headers());
         }
         // 转换成Json对象
-        JsonObject jsonObj = jsonEl.getAsJsonObject();
         if (!mBuilder.customGlintModule.isEmpty()) {
             for (BaseHttpModule baseHttpModule : mBuilder.customGlintModule) {
                 boolean transitive =
-                        baseHttpModule.customDeserialize(result, jsonObj, sGson, mTypeOfT);
+                        baseHttpModule.customDeserialize(result, jsonEl, sGson, mTypeOfT);
                 if (!transitive) {
                     break;
                 }
             }
         } else if (GLINT != null && !mBuilder.standardDeserialize) {
-            GLINT.customDeserialize(result, jsonObj, sGson, mTypeOfT);
+            GLINT.customDeserialize(result, jsonEl, sGson, mTypeOfT);
         } else {
             result.setRunStatus(Glint.ResultStatus.STATUS_SUCCESS);
-            result.setData(GlintRequestUtil.<T>successDeserialize(sGson, jsonObj, mTypeOfT));
+            result.setData(GlintRequestUtil.<T>successDeserialize(sGson, jsonEl, mTypeOfT));
         }
         return result;
     }

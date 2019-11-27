@@ -5,10 +5,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.lang.reflect.Type;
-import java.util.Map;
 import java.util.TreeMap;
 
 import okhttp3.Headers;
@@ -27,12 +27,14 @@ public abstract class BaseHttpModule {
      * @param builder    OkHttpClient配置
      * @return OkHttpClient配置
      */
-    public OkHttpClient.Builder onOkHttpBuildCreate(@NonNull Glint.GlintType clientType, @NonNull OkHttpClient.Builder builder) {
+    public OkHttpClient.Builder onOkHttpBuildCreate(@NonNull Glint.GlintType clientType,
+                                                    @NonNull OkHttpClient.Builder builder) {
         return builder;
     }
 
     @CallSuper
-    public <E extends BaseHttpModule> void configDefaultBuilder(@NonNull GlintBaseBuilder<E> builder) {
+    public <E extends BaseHttpModule> void configDefaultBuilder(
+            @NonNull GlintBaseBuilder<E> builder) {
     }
 
     /**
@@ -40,7 +42,8 @@ public abstract class BaseHttpModule {
      * @param <E>     BaseHttpModule子类
      * @throws Exception 未知异常
      */
-    public <E extends BaseHttpModule> void onBuilderCreated(@NonNull GlintBaseBuilder<E> builder) throws Exception {
+    public <E extends BaseHttpModule> void onBuilderCreated(@NonNull GlintBaseBuilder<E> builder)
+            throws Exception {
     }
 
     public UrlResult getUrl(@NonNull String originalUrl) throws Exception {
@@ -51,7 +54,8 @@ public abstract class BaseHttpModule {
         return true;
     }
 
-    public boolean getParams(@NonNull TreeMap<String, String> originalParams, @Nullable JsonObject originalJsonParams) throws Exception {
+    public boolean getParams(@NonNull TreeMap<String, String> originalParams,
+                             @Nullable JsonObject originalJsonParams) throws Exception {
         return true;
     }
 
@@ -59,7 +63,9 @@ public abstract class BaseHttpModule {
         return true;
     }
 
-    public <T> boolean customDeserialize(@NonNull GlintResultBean<T> result, @NonNull JsonObject jsonObj, @NonNull Gson gson, @NonNull Type typeOfT) throws Exception {
+    public <T> boolean customDeserialize(@NonNull GlintResultBean<T> result,
+                                         @NonNull JsonElement jsonEl, @NonNull Gson gson,
+                                         @NonNull Type typeOfT) throws Exception {
         return true;
     }
 

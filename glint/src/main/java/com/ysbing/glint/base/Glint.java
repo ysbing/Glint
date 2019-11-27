@@ -1,6 +1,5 @@
 package com.ysbing.glint.base;
 
-
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -10,7 +9,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import com.ysbing.glint.http.GlintHttpActivityLifecycleCallbacks;
 import com.ysbing.glint.util.ContextHelper;
 
@@ -36,7 +35,9 @@ public final class Glint extends BaseHttpModule {
                 if (sInstance == null) {
                     Application application = ContextHelper.getApplication();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                        application.registerActivityLifecycleCallbacks(new GlintHttpActivityLifecycleCallbacks(application.getApplicationContext()));
+                        application.registerActivityLifecycleCallbacks(
+                                new GlintHttpActivityLifecycleCallbacks(
+                                        application.getApplicationContext()));
                     }
                     sInstance = new Glint(application.getApplicationContext());
                 }
@@ -78,7 +79,8 @@ public final class Glint extends BaseHttpModule {
     }
 
     @Override
-    public OkHttpClient.Builder onOkHttpBuildCreate(@NonNull GlintType clientType, @NonNull OkHttpClient.Builder builder) {
+    public OkHttpClient.Builder onOkHttpBuildCreate(@NonNull GlintType clientType,
+                                                    @NonNull OkHttpClient.Builder builder) {
         if (mClazzBaseHttpModule != null) {
             return mClazzBaseHttpModule.onOkHttpBuildCreate(clientType, builder);
         } else {
@@ -87,7 +89,8 @@ public final class Glint extends BaseHttpModule {
     }
 
     @Override
-    public <E extends BaseHttpModule> void configDefaultBuilder(@NonNull GlintBaseBuilder<E> builder) {
+    public <E extends BaseHttpModule> void configDefaultBuilder(
+            @NonNull GlintBaseBuilder<E> builder) {
         super.configDefaultBuilder(builder);
         if (mClazzBaseHttpModule != null) {
             mClazzBaseHttpModule.configDefaultBuilder(builder);
@@ -95,7 +98,8 @@ public final class Glint extends BaseHttpModule {
     }
 
     @Override
-    public <E extends BaseHttpModule> void onBuilderCreated(@NonNull GlintBaseBuilder<E> builder) throws Exception {
+    public <E extends BaseHttpModule> void onBuilderCreated(@NonNull GlintBaseBuilder<E> builder)
+            throws Exception {
         super.onBuilderCreated(builder);
         if (mClazzBaseHttpModule != null) {
             mClazzBaseHttpModule.onBuilderCreated(builder);
@@ -122,11 +126,13 @@ public final class Glint extends BaseHttpModule {
     }
 
     @Override
-    public <T> boolean customDeserialize(@NonNull GlintResultBean<T> result, @NonNull JsonObject jsonObj, @NonNull Gson gson, @NonNull Type typeOfT) throws Exception {
+    public <T> boolean customDeserialize(@NonNull GlintResultBean<T> result,
+                                         @NonNull JsonElement jsonEl, @NonNull Gson gson,
+                                         @NonNull Type typeOfT) throws Exception {
         if (mClazzBaseHttpModule != null) {
-            return mClazzBaseHttpModule.customDeserialize(result, jsonObj, gson, typeOfT);
+            return mClazzBaseHttpModule.customDeserialize(result, jsonEl, gson, typeOfT);
         }
-        return super.customDeserialize(result, jsonObj, gson, typeOfT);
+        return super.customDeserialize(result, jsonEl, gson, typeOfT);
     }
 
     /**

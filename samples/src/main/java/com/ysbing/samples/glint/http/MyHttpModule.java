@@ -26,13 +26,15 @@ public class MyHttpModule extends BaseHttpModule {
     }
 
     @Override
-    public OkHttpClient.Builder onOkHttpBuildCreate(@NonNull Glint.GlintType clientType, @NonNull OkHttpClient.Builder builder) {
+    public OkHttpClient.Builder onOkHttpBuildCreate(@NonNull Glint.GlintType clientType,
+                                                    @NonNull OkHttpClient.Builder builder) {
         return builder.readTimeout(3000L, TimeUnit.MILLISECONDS)
                 .writeTimeout(5000L, TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public <E extends BaseHttpModule> void configDefaultBuilder(@NonNull GlintBaseBuilder<E> builder) {
+    public <E extends BaseHttpModule> void configDefaultBuilder(
+            @NonNull GlintBaseBuilder<E> builder) {
         super.configDefaultBuilder(builder);
     }
 
@@ -47,7 +49,8 @@ public class MyHttpModule extends BaseHttpModule {
     }
 
     @Override
-    public boolean getParams(@NonNull TreeMap<String, String> originalParams, @Nullable JsonObject originalJsonParams) throws Exception {
+    public boolean getParams(@NonNull TreeMap<String, String> originalParams,
+                             @Nullable JsonObject originalJsonParams) throws Exception {
         return super.getParams(originalParams, originalJsonParams);
     }
 
@@ -57,7 +60,10 @@ public class MyHttpModule extends BaseHttpModule {
     }
 
     @Override
-    public <T> boolean customDeserialize(@NonNull GlintResultBean<T> result, @NonNull JsonObject jsonObj, @NonNull Gson gson, @NonNull Type typeOfT) throws Exception {
+    public <T> boolean customDeserialize(@NonNull GlintResultBean<T> result,
+                                         @NonNull JsonElement jsonEl, @NonNull Gson gson,
+                                         @NonNull Type typeOfT) throws Exception {
+        JsonObject jsonObj = jsonEl.getAsJsonObject();
         JsonElement statusElement = jsonObj.get("status");
         JsonElement messageElement = jsonObj.get("message");
         JsonElement dataElement = jsonObj.get("data");
@@ -77,7 +83,8 @@ public class MyHttpModule extends BaseHttpModule {
             if (status == 200) {
                 result.setRunStatus(Glint.ResultStatus.STATUS_SUCCESS);
                 if (dataElement != null) {
-                    result.setData(GlintRequestUtil.<T>successDeserialize(gson, dataElement, typeOfT));
+                    result.setData(
+                            GlintRequestUtil.<T>successDeserialize(gson, dataElement, typeOfT));
                 }
             } else {
                 result.setRunStatus(Glint.ResultStatus.STATUS_ERROR);
