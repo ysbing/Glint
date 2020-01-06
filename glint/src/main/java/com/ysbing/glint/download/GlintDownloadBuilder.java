@@ -34,9 +34,17 @@ public final class GlintDownloadBuilder<E extends BaseHttpModule> extends GlintB
      */
     public long contentLength;
     /**
+     * 是否紧急，用于插队，默认是false
+     */
+    public boolean urgent = false;
+    /**
      * 下载完成校验MD5，默认是true
      */
     public boolean checkMd5 = true;
+    /**
+     * 用于校验文件是否完整
+     */
+    public String md5;
 
     public GlintDownloadBuilder(@NonNull Glint glint) {
         this(glint, true);

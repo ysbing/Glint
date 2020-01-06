@@ -104,8 +104,41 @@ public final class GlintDownload extends GlintDownloadCore {
         return this;
     }
 
+    /**
+     * @param urgent 是否紧急，用于插队
+     * @return
+     */
+    public GlintDownload urgent(boolean urgent) {
+        mBuilder.urgent = urgent;
+        return this;
+    }
+
+    /**
+     * @param checkMd5 是否检查文件完整性
+     * @return
+     */
     public GlintDownload checkMd5(boolean checkMd5) {
         mBuilder.checkMd5 = checkMd5;
+        return this;
+    }
+
+    /**
+     * @param md5 传入要检查文件完整性的哈希码
+     * @return
+     */
+    public GlintDownload md5(String md5) {
+        mBuilder.md5 = md5;
+        return this;
+    }
+
+
+    /**
+     * 设置是否使用主线程
+     *
+     * @param mainThread 是否使用主线程
+     */
+    public GlintDownload mainThread(boolean mainThread) {
+        mBuilder.mainThread = mainThread;
         return this;
     }
 
@@ -143,7 +176,7 @@ public final class GlintDownload extends GlintDownloadCore {
     public void execute() {
         if (!TextUtils.isEmpty(mBuilder.url)) {
             GlintRequestUtil.addDownloadRequestTag(mBuilder);
-            GlintDownloadDispatcher.getInstance().executed(this);
+            GlintDownloadDispatcher.getInstance().executed(this, mBuilder.urgent);
         }
     }
 

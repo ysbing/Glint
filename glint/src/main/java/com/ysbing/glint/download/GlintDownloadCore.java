@@ -114,11 +114,14 @@ public class GlintDownloadCore implements Runnable {
             prepare();
             response = mOkHttpCall.execute();
             // 比较MD5，如果相同的话，就不用下载了
-            String contentMd5 = response.header("ETag");
-            if (contentMd5 != null) {
-                contentMd5 = contentMd5.replace("\"", "").toLowerCase();
-                if (contentMd5.length() != 32) {
-                    contentMd5 = null;
+            String contentMd5 = mBuilder.md5;
+            if (TextUtils.isEmpty(contentMd5)) {
+                contentMd5 = response.header("ETag");
+                if (contentMd5 != null) {
+                    contentMd5 = contentMd5.replace("\"", "").toLowerCase();
+                    if (contentMd5.length() != 32) {
+                        contentMd5 = null;
+                    }
                 }
             }
             // 得到返回数据
@@ -134,35 +137,57 @@ public class GlintDownloadCore implements Runnable {
             if (mBuilder.range == 0) {
                 mBuilder.contentLength = contentLength;
             }
-            for (GlintDownloadListener listener : mBuilder.listeners) {
-                if (listener.onPrepared(fileName, mBuilder.contentLength)) {
-                    coreCancel();
-                    return;
-                }
-            }
             if (mBuilder.saveFile.isDirectory()) {
                 mBuilder.saveFile = new File(mBuilder.saveFile, fileName);
             }
-            if (contentMd5 != null &&
-                    TextUtils.equals(Md5Util.getMD5Str(mBuilder.saveFile), contentMd5)) {
+            boolean isCancel = false;
+            for (GlintDownloadListener listener : mBuilder.listeners) {
+                if (listener.onPrepared(mBuilder)) {
+                    isCancel = true;
+                    break;
+                }
+            }
+            if (isCancel) {
+                for (GlintDownloadListener listener : mBuilder.listeners) {
+                    coreCancel();
+                    listener.onFinish();
+                }
+                return;
+            }
+            if (contentMd5 != null && TextUtils.equals(Md5Util.getMD5Str(mBuilder.saveFile), contentMd5)) {
                 final Response finalResponse = response;
-                UiKit.runOnMainThreadAsync(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (GlintDownloadListener listener : mBuilder.listeners) {
-                            try {
-                                listener.onProgress(mBuilder.saveFile.length(),
-                                        mBuilder.saveFile.length(),
-                                        mBuilder.saveFile.length(), 100);
-                                listener.onSuccess(mBuilder.saveFile);
-                            } catch (Throwable e) {
-                                listener.onDownloadFail(e, finalResponse);
-                            } finally {
-                                listener.onFinish();
+                if (mBuilder.mainThread) {
+                    UiKit.runOnMainThreadAsync(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (GlintDownloadListener listener : mBuilder.listeners) {
+                                try {
+                                    listener.onProgress(mBuilder.saveFile.length(),
+                                            mBuilder.saveFile.length(),
+                                            mBuilder.saveFile.length(), 100);
+                                    listener.onSuccess(mBuilder.saveFile);
+                                } catch (Throwable e) {
+                                    listener.onDownloadFail(e, finalResponse);
+                                } finally {
+                                    listener.onFinish();
+                                }
                             }
                         }
+                    });
+                } else {
+                    for (GlintDownloadListener listener : mBuilder.listeners) {
+                        try {
+                            listener.onProgress(mBuilder.saveFile.length(),
+                                    mBuilder.saveFile.length(),
+                                    mBuilder.saveFile.length(), 100);
+                            listener.onSuccess(mBuilder.saveFile);
+                        } catch (Throwable e) {
+                            listener.onDownloadFail(e, finalResponse);
+                        } finally {
+                            listener.onFinish();
+                        }
                     }
-                });
+                }
                 return;
             }
             int len;

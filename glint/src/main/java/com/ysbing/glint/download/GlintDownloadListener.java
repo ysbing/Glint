@@ -3,8 +3,9 @@ package com.ysbing.glint.download;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.ysbing.glint.http.GlintHttpListener;
+import com.ysbing.glint.base.BaseHttpModule;
 import com.ysbing.glint.base.GlintResultBean;
+import com.ysbing.glint.http.GlintHttpListener;
 
 import java.io.File;
 
@@ -51,11 +52,10 @@ public abstract class GlintDownloadListener extends GlintHttpListener<File> {
     /**
      * 该方法在非UI线程
      *
-     * @param fileName      文件名
-     * @param contentLength 文件长度
+     * @param downloadBuilder 配置参数
      * @return 是否终止，默认否
      */
-    public boolean onPrepared(@NonNull String fileName, long contentLength) {
+    public boolean onPrepared(@NonNull GlintDownloadBuilder<BaseHttpModule> downloadBuilder) {
         return false;
     }
 

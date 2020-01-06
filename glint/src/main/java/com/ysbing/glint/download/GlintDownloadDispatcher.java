@@ -23,7 +23,7 @@ import okhttp3.internal.Util;
 public final class GlintDownloadDispatcher {
     private static GlintDownloadDispatcher mInstance;
 
-    private static final int mMaxRequests = 5;
+    private int mMaxRequests = 5;
 
     /**
      * Executes calls. Created lazily.
@@ -63,12 +63,26 @@ public final class GlintDownloadDispatcher {
         return mExecutorService;
     }
 
-    public synchronized void executed(GlintDownloadCore call) {
+    public void setMaxRequests(int maxRequests) {
+        if (maxRequests > 0) {
+            this.mMaxRequests = maxRequests;
+        }
+    }
+
+    public void executed(GlintDownloadCore call) {
+        executed(call, false);
+    }
+
+    public synchronized void executed(GlintDownloadCore call, boolean urgent) {
         if (mRunningAsyncCalls.size() < mMaxRequests) {
             mRunningAsyncCalls.add(call);
             executorService().execute(call);
         } else {
-            mReadyAsyncCalls.add(call);
+            if (urgent) {
+                mReadyAsyncCalls.addFirst(call);
+            } else {
+                mReadyAsyncCalls.add(call);
+            }
         }
         mCallTags.put(call.mBuilder.tag, call);
     }
