@@ -6,7 +6,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import com.ysbing.glint.socket.socketio.GlintSocketIOCore;
 import com.ysbing.glint.socket.socketio.Protocol;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Socket请求类，请求的入口
@@ -27,6 +31,11 @@ public class GlintSocket {
      * 异常断开事件，如网络中断
      */
     public static final String EVENT_ERROR = "EVENT_ERROR";
+    public static final List<String> ALL_EVENT =new ArrayList<String>(){{
+        add(EVENT_CONNECT);
+        add(EVENT_DISCONNECT);
+        add(EVENT_ERROR);
+    }};
     /**
      * 网络错误
      */
@@ -62,9 +71,12 @@ public class GlintSocket {
         return new GlintSocket(url, cmdId, message, -1, GlintSocketBuilder.RequestType.SEND);
     }
 
+    /**
+     * 发送一条柚子IO socket消息
+     */
     public static GlintSocket sendIO(@NonNull String url, @NonNull String cmdId, @NonNull String message) {
-        final int sendId = GlintSocketCore.sSendId.incrementAndGet();
-        return new GlintSocket(url, cmdId, "3:::" + Protocol.encode(sendId, cmdId, message), sendId, GlintSocketBuilder.RequestType.SEND);
+        final int sendId = GlintSocketIOCore.sSendId.incrementAndGet();
+        return new GlintSocket(url, cmdId, "3:::" + Protocol.encode(sendId, cmdId, message), sendId, GlintSocketBuilder.RequestType.IO_SEND);
     }
 
     /**
@@ -72,6 +84,13 @@ public class GlintSocket {
      */
     public static GlintSocket on(@NonNull String url, @NonNull String cmdId) {
         return new GlintSocket(url, cmdId, "", -1, GlintSocketBuilder.RequestType.PUSH_LISTENER);
+    }
+
+    /**
+     * 设置柚子IO推送监听
+     */
+    public static GlintSocket onIO(@NonNull String url, @NonNull String cmdId) {
+        return new GlintSocket(url, cmdId, "", -1, GlintSocketBuilder.RequestType.IO_PUSH_LISTENER);
     }
 
     /**
@@ -85,8 +104,8 @@ public class GlintSocket {
         off(url, cmdId, 0);
     }
 
-    public static void off(@NonNull String url, @Nullable String cmdId, int tag) {
-        GlintSocketBuilder builder = new GlintSocketBuilder();
+    public static <T> void off(@NonNull String url, @Nullable String cmdId, int tag) {
+        GlintSocketBuilder<T> builder = new GlintSocketBuilder<>();
         builder.url = url;
         builder.cmdId = cmdId;
         builder.tag = tag;
@@ -110,7 +129,17 @@ public class GlintSocket {
         return this;
     }
 
-    public GlintSocket(@NonNull String url, @NonNull String cmdId, @NonNull String params, int sendId, @NonNull GlintSocketBuilder.RequestType requestType) {
+    /**
+     * 使用自定义Module，可做高级操作
+     *
+     * @param module 自定义Module
+     */
+    public GlintSocket using(@NonNull SocketHttpModule module) {
+        builder.customGlintModule = module;
+        return this;
+    }
+
+    public GlintSocket(@NonNull String url, @Nullable String cmdId, @NonNull String params, int sendId, @NonNull GlintSocketBuilder.RequestType requestType) {
         builder = new GlintSocketBuilder<>();
         builder.url = url;
         builder.cmdId = cmdId;
@@ -136,8 +165,17 @@ public class GlintSocket {
                     }
                     GlintSocketDispatcher.getInstance().send(builder);
                     break;
+                case IO_SEND:
+                    if (builder.sendId != -1) {
+                        builder.cmdId += GlintSocket.class.getSimpleName() + builder.sendId;
+                    }
+                    GlintSocketDispatcher.getInstance().sendIO(builder);
+                    break;
                 case PUSH_LISTENER:
                     GlintSocketDispatcher.getInstance().on(builder);
+                    break;
+                case IO_PUSH_LISTENER:
+                    GlintSocketDispatcher.getInstance().onIO(builder);
                     break;
                 default:
                     break;

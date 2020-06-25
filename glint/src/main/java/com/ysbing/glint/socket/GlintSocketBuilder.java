@@ -35,9 +35,15 @@ public final class GlintSocketBuilder<T> {
      * 请求标签，用于取消请求
      */
     public int tag;
+    /**
+     * 自定义解析Module
+     */
+    public SocketHttpModule customGlintModule;
 
     public enum RequestType {
         SEND,
-        PUSH_LISTENER
+        IO_SEND,
+        PUSH_LISTENER,
+        IO_PUSH_LISTENER
     }
 }

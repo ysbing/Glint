@@ -14,13 +14,14 @@ import com.ysbing.glint.socket.GlintSocket;
 import com.ysbing.glint.socket.GlintSocketListener;
 import com.ysbing.samples.glint.R;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Created by chenzhujie on 2019/5/14
  */
 public class WebSocketRequestActivity extends AppCompatActivity {
-    private static final String SOCKET_URL = "http://socket.test";
-    private static final String SOCKET_CMD_ON = "on_cmd";
-    private static final String SOCKET_CMD_SEND = "msg_cmd";
+    private static final String SOCKET_URL = "ws://echo.websocket.org";
+    private final AtomicInteger msgId = new AtomicInteger();
     private TextView mTextView;
     private String text = "";
 
@@ -40,14 +41,15 @@ public class WebSocketRequestActivity extends AppCompatActivity {
         buttonOn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                offLastSocket();
+                GlintSocket.off(SOCKET_URL, GlintSocket.EVENT_CONNECT);
+                GlintSocket.off(SOCKET_URL, GlintSocket.EVENT_DISCONNECT);
                 socketOn();
             }
         });
         buttonSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                offLastSocket();
+                GlintSocket.off(SOCKET_URL, MySocketHttpModule.SOCKET_CMD_SEND);
                 socketSend();
             }
         });
@@ -61,31 +63,42 @@ public class WebSocketRequestActivity extends AppCompatActivity {
         }
     }
 
-    private void offLastSocket() {
-        GlintSocket.off(SOCKET_URL, SOCKET_CMD_ON);
-        GlintSocket.off(SOCKET_URL, SOCKET_CMD_SEND);
-    }
-
     private void socketOn() {
-        GlintSocket.on(SOCKET_URL, SOCKET_CMD_ON).execute(new GlintSocketListener<String>() {
+        GlintSocket.on(SOCKET_URL, GlintSocket.EVENT_CONNECT).execute(new GlintSocketListener<String>() {
             @Override
             public void onProcess(@NonNull String result) throws Throwable {
                 super.onProcess(result);
-                text = "socketOn,result:" + result + "\n\n" + text;
+                text = "socketOn,EVENT_CONNECT,result:" + result + "\n\n" + text;
                 updateEditText();
             }
 
             @Override
             public void onError(@NonNull String error) {
                 super.onError(error);
-                text = "socketOn,error:" + error + "\n\n" + text;
+                text = "socketOn,EVENT_CONNECT,error:" + error + "\n\n" + text;
+                updateEditText();
+            }
+        });
+        GlintSocket.on(SOCKET_URL, GlintSocket.EVENT_DISCONNECT).execute(new GlintSocketListener<String>() {
+            @Override
+            public void onProcess(@NonNull String result) throws Throwable {
+                super.onProcess(result);
+                text = "socketOn,EVENT_DISCONNECT,result:" + result + "\n\n" + text;
+                updateEditText();
+            }
+
+            @Override
+            public void onError(@NonNull String error) {
+                super.onError(error);
+                text = "socketOn,EVENT_CONNECT,error:" + error + "\n\n" + text;
                 updateEditText();
             }
         });
     }
 
     private void socketSend() {
-        GlintSocket.send(SOCKET_URL, SOCKET_CMD_SEND, "我是消息").execute(new GlintSocketListener<String>() {
+        GlintSocket.send(SOCKET_URL, MySocketHttpModule.SOCKET_CMD_SEND, "我是消息" + msgId.incrementAndGet())
+                .using(MySocketHttpModule.get()).execute(new GlintSocketListener<String>() {
             @Override
             public void onProcess(@NonNull String result) throws Throwable {
                 super.onProcess(result);

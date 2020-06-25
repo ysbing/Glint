@@ -154,7 +154,11 @@ public final class Glint extends BaseHttpModule {
         /**
          * 长连接
          */
-        SOCKET
+        SOCKET,
+        /**
+         * 柚子IO长连接
+         */
+        SOCKET_IO
     }
 
     public enum ResultStatus {

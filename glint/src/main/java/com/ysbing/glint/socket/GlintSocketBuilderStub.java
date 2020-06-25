@@ -1,12 +1,15 @@
 package com.ysbing.glint.socket;
 
-import com.google.gson.Gson;
+import android.os.RemoteException;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.ysbing.glint.util.GlintRequestUtil;
 import com.ysbing.glint.util.UiKit;
 
 import java.lang.reflect.Type;
+
+import static com.ysbing.glint.util.GlintRequestUtil.sGson;
 
 /**
  * 只做Google的Gson中的JsonObject
@@ -17,9 +20,11 @@ import java.lang.reflect.Type;
 public class GlintSocketBuilderStub<T> extends GlintSocketBuilderWrapper.Stub {
 
     private final GlintSocketBuilder<T> builder;
+    private Type typeOfT;
 
     public GlintSocketBuilderStub(GlintSocketBuilder<T> builder) {
         this.builder = builder;
+        typeOfT = GlintRequestUtil.getListenerType(builder.listener.getClass());
     }
 
     @Override
@@ -48,29 +53,50 @@ public class GlintSocketBuilderStub<T> extends GlintSocketBuilderWrapper.Stub {
     }
 
     @Override
-    public void onResponse(String response) {
-        if (builder.listener != null) {
-            Type typeOfT = GlintRequestUtil.getListenerType(builder.listener.getClass());
-            final T t;
-            if (typeOfT.equals(Void.class)) {
-                t = null;
-            } else {
+    public String getResponseCmdId(String response) throws RemoteException {
+        if (builder.customGlintModule != null) {
+            if (!typeOfT.equals(Void.class)) {
                 JsonParser parser = new JsonParser();
                 JsonElement jsonElement = parser.parse(response);
-                t = GlintRequestUtil.successDeserialize(new Gson(), jsonElement, typeOfT);
+                return builder.customGlintModule.getCmdId(jsonElement, sGson, typeOfT);
             }
-            UiKit.runOnMainThreadAsync(new Runnable() {
-                @Override
-                public void run() {
+        }
+        return null;
+    }
+
+    @Override
+    public void onResponse(String response) throws RemoteException {
+        if (builder.listener != null) {
+            T t;
+            if (!typeOfT.equals(Void.class)) {
+                JsonParser parser = new JsonParser();
+                JsonElement jsonElement = parser.parse(response);
+                if (builder.customGlintModule != null) {
                     try {
-                        //noinspection ConstantConditions
-                        builder.listener.onProcess(t);
-                    } catch (Throwable e) {
+                        t = builder.customGlintModule.customDeserialize(jsonElement, sGson, typeOfT);
+                        onProcess(t);
+                    } catch (Exception e) {
                         onError(e.getMessage());
                     }
+                } else {
+                    t = GlintRequestUtil.successDeserialize(sGson, jsonElement, typeOfT);
+                    onProcess(t);
                 }
-            });
+            }
         }
+    }
+
+    private void onProcess(final T t) {
+        UiKit.runOnMainThreadAsync(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    builder.listener.onProcess(t);
+                } catch (Throwable e) {
+                    onError(e.getMessage());
+                }
+            }
+        });
     }
 
     @Override

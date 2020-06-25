@@ -38,6 +38,7 @@ import okhttp3.Response;
 public class GlintRequestUtil {
 
     public static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final Gson sGson = new Gson();
 
     /**
      * 成功响应体反序列化

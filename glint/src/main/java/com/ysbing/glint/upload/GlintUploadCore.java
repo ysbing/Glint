@@ -25,6 +25,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 
+import static com.ysbing.glint.util.GlintRequestUtil.sGson;
+
 /**
  * 上传核心类
  *
@@ -33,7 +35,6 @@ import okhttp3.ResponseBody;
  */
 public class GlintUploadCore<T> implements Runnable {
     private static final Glint GLINT = Glint.getsInstance();
-    private static final Gson gson = new Gson();
     private static OkHttpClient client;
     protected GlintUploadBuilder<T, BaseHttpModule> mBuilder;
     private Type mTypeOfT;
@@ -131,16 +132,16 @@ public class GlintUploadCore<T> implements Runnable {
             if (!mBuilder.customGlintModule.isEmpty()) {
                 for (BaseHttpModule baseHttpModule : mBuilder.customGlintModule) {
                     boolean transitive =
-                            baseHttpModule.customDeserialize(result, jsonObj, gson, mTypeOfT);
+                            baseHttpModule.customDeserialize(result, jsonObj, sGson, mTypeOfT);
                     if (!transitive) {
                         break;
                     }
                 }
             } else if (GLINT != null && !mBuilder.standardDeserialize) {
-                GLINT.customDeserialize(result, jsonObj, gson, mTypeOfT);
+                GLINT.customDeserialize(result, jsonObj, sGson, mTypeOfT);
             } else {
                 result.setRunStatus(Glint.ResultStatus.STATUS_SUCCESS);
-                result.setData(GlintRequestUtil.<T>successDeserialize(gson, jsonObj, mTypeOfT));
+                result.setData(GlintRequestUtil.<T>successDeserialize(sGson, jsonObj, mTypeOfT));
             }
             deliverResponse(result);
         } catch (Exception e) {

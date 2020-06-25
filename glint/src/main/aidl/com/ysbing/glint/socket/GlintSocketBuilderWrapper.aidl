@@ -12,6 +12,8 @@ interface GlintSocketBuilderWrapper {
 
     int getTag();
 
+    String getResponseCmdId(String response);
+
     void onResponse(String response);
 
     void onError(String error);

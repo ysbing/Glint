@@ -10,6 +10,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
 
+import com.ysbing.glint.base.BaseHttpModule;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -21,9 +23,10 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class GlintSocketDispatcher implements ServiceConnection {
 
-    private static GlintSocketDispatcher mInstance = new GlintSocketDispatcher();
+    private static GlintSocketDispatcher mInstance = null;
 
     private final LinkedBlockingQueue<GlintSocketBuilderWrapper> mQueue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<GlintSocketBuilderWrapper> mIOQueue = new LinkedBlockingQueue<>();
     private final List<GlintSocketBuilder> mSocketTaskBuilders = new ArrayList<>();
     private final GlintSocketServiceStub mSocketServiceStub;
 
@@ -31,8 +34,10 @@ public class GlintSocketDispatcher implements ServiceConnection {
     private boolean mInit;
 
     private GlintSocketDispatcher() {
-        Worker worker = new Worker();
+        Thread worker = new Worker();
+        Thread workerIO = new WorkerIO();
         worker.start();
+        workerIO.start();
         mSocketServiceStub = new GlintSocketServiceStub();
     }
 
@@ -69,6 +74,13 @@ public class GlintSocketDispatcher implements ServiceConnection {
     }
 
     /**
+     * 发送一条柚子IO socket消息
+     */
+    <T> void sendIO(@NonNull GlintSocketBuilder<T> builder) {
+        mIOQueue.offer(new GlintSocketBuilderStub<>(builder));
+    }
+
+    /**
      * 设置一个推送监听
      */
     public <T> void on(@NonNull GlintSocketBuilder<T> builder) {
@@ -90,6 +102,36 @@ public class GlintSocketDispatcher implements ServiceConnection {
                 mService.on(new GlintSocketBuilderStub<>(builder));
             } else {
                 mSocketServiceStub.on(new GlintSocketBuilderStub<>(builder));
+            }
+        } catch (Exception e) {
+            if (builder.listener != null) {
+                builder.listener.onError(e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * 设置一个柚子IO推送监听
+     */
+    public <T> void onIO(@NonNull GlintSocketBuilder<T> builder) {
+        if (mService == null && mInit) {
+            mSocketTaskBuilders.add(builder);
+            return;
+        }
+        try {
+            if (mService != null) {
+                mService.connectIO(builder.url);
+            } else {
+                mSocketServiceStub.connectIO(builder.url);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (mService != null) {
+                mService.onIO(new GlintSocketBuilderStub<>(builder));
+            } else {
+                mSocketServiceStub.onIO(new GlintSocketBuilderStub<>(builder));
             }
         } catch (Exception e) {
             if (builder.listener != null) {
@@ -134,7 +176,7 @@ public class GlintSocketDispatcher implements ServiceConnection {
         try {
             mService = GlintSocketService.Stub.asInterface(iBinder);
             for (GlintSocketBuilder taskBuilder : mSocketTaskBuilders) {
-                on(taskBuilder);
+                onIO(taskBuilder);
             }
         } catch (Exception e) {
             mService = null;
@@ -164,14 +206,46 @@ public class GlintSocketDispatcher implements ServiceConnection {
         }
     }
 
-    private class Worker extends Thread {
+    private void continueProcessTaskWrappersIO() {
+        try {
+            GlintSocketBuilderWrapper taskWrapper = mIOQueue.take();
+            if (mService != null) {
+                if (taskWrapper == null) {
+                    return;
+                }
+                mService.sendIO(taskWrapper);
+            } else {
+                if (taskWrapper == null) {
+                    return;
+                }
+                mSocketServiceStub.sendIO(taskWrapper);
+            }
+        } catch (Exception ignored) {
+        }
+    }
 
+    private class Worker extends Thread {
+        @Override
+        public void run() {
+            //noinspection InfiniteLoopStatement
+            for (; ; ) {
+                continueProcessTaskWrappers();
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    //
+                }
+            }
+        }
+    }
+
+    private class WorkerIO extends Thread {
         @Override
         public void run() {
             //这样写可以防止代码注入
             //noinspection InfiniteLoopStatement
             for (; ; ) {
-                continueProcessTaskWrappers();
+                continueProcessTaskWrappersIO();
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {

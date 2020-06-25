@@ -1,13 +1,20 @@
 
-package com.ysbing.glint.socket;
+package com.ysbing.glint.socket.socketio;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.ysbing.glint.base.Glint;
+import com.ysbing.glint.socket.GlintSocket;
+import com.ysbing.glint.socket.GlintSocketListener;
 import com.ysbing.glint.socket.socketio.GlintSocketIOCallback;
+import com.ysbing.glint.socket.socketio.IOMessage;
 import com.ysbing.glint.socket.socketio.IOWebSocketTransport;
+import com.ysbing.glint.util.UiKit;
 
 import java.net.URI;
 import java.util.ArrayDeque;
@@ -15,6 +22,7 @@ import java.util.Deque;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -23,36 +31,39 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
 /**
- * WebSocket核心类
+ * 柚子IO Socket核心类
  *
  * @author ysbing
- * 创建于 2020/6/25
+ * 创建于 2018/3/25
  */
-public class GlintSocketCore {
+public class GlintSocketIOCore {
 
+    public static final AtomicInteger sSendId = new AtomicInteger();
     private static final Glint GLINT = Glint.getsInstance();
     private static OkHttpClient sClient;
 
     private WebSocket mWebSocket;
     private final URI mUrl;
     private final Deque<String> mWaitMessages = new ArrayDeque<>();
-    private final Map<String, GlintSocketListener<SocketInnerResultBean>> mAsyncListeners = new ConcurrentHashMap<>();
+    private final Map<String, GlintSocketListener<String>> mAsyncListeners = new ConcurrentHashMap<>();
+    private final LruCache<String, Boolean> mWaitPushMessages = new LruCache<>(10);
     private boolean mConnecting = false;
     private boolean mConnected = false;
+    private boolean mAuthorized = false;
 
     static {
         if (GLINT != null) {
-            sClient = GLINT.onOkHttpBuildCreate(Glint.GlintType.SOCKET, new OkHttpClient.Builder()).build();
+            sClient = GLINT.onOkHttpBuildCreate(Glint.GlintType.SOCKET_IO, new OkHttpClient.Builder()).build();
         } else {
             sClient = new OkHttpClient.Builder().build();
         }
     }
 
-    GlintSocketCore(@NonNull URI url) {
+    public GlintSocketIOCore(@NonNull URI url) {
         this.mUrl = url;
     }
 
-    synchronized void connect() {
+    public synchronized void connect() {
         if (mConnecting || mConnected) {
             return;
         }
@@ -71,19 +82,16 @@ public class GlintSocketCore {
                     if (GlintSocket.ALL_EVENT.contains(s)) {
                         continue;
                     }
-                    GlintSocketListener<SocketInnerResultBean> listener = mAsyncListeners.get(s);
+                    GlintSocketListener<String> listener = mAsyncListeners.get(s);
                     if (listener != null) {
                         listener.onError(throwable.toString());
                     }
                 }
                 if (mAsyncListeners.containsKey(GlintSocket.EVENT_ERROR)) {
-                    GlintSocketListener<SocketInnerResultBean> listener = mAsyncListeners.get(GlintSocket.EVENT_ERROR);
+                    GlintSocketListener<String> listener = mAsyncListeners.get(GlintSocket.EVENT_ERROR);
                     if (listener != null) {
                         try {
-                            SocketInnerResultBean bean = new SocketInnerResultBean();
-                            bean.response = String.valueOf(GlintSocket.ERROR_NET);
-                            bean.msgType = 1;
-                            listener.onProcess(bean);
+                            listener.onProcess(String.valueOf(GlintSocket.ERROR_NET));
                         } catch (Throwable ignored) {
                         }
                     }
@@ -114,13 +122,10 @@ public class GlintSocketCore {
                 }
                 mWaitMessages.clear();
                 if (mAsyncListeners.containsKey(GlintSocket.EVENT_CONNECT)) {
-                    GlintSocketListener<SocketInnerResultBean> listener = mAsyncListeners.get(GlintSocket.EVENT_CONNECT);
+                    GlintSocketListener<String> listener = mAsyncListeners.get(GlintSocket.EVENT_CONNECT);
                     if (listener != null) {
                         try {
-                            SocketInnerResultBean bean = new SocketInnerResultBean();
-                            bean.response = "";
-                            bean.msgType = 1;
-                            listener.onProcess(bean);
+                            listener.onProcess("");
                         } catch (Throwable ignored) {
                         }
                     }
@@ -130,7 +135,45 @@ public class GlintSocketCore {
             @Override
             public void onMessage(WebSocket webSocket, String text) {
                 super.onMessage(webSocket, text);
-                messagePush(text);
+                IOMessage message = new IOMessage(text);
+                switch (message.getType()) {
+                    case IOMessage.TYPE_DISCONNECT:
+                        disconnect();
+                        break;
+                    case IOMessage.TYPE_CONNECT:
+                        break;
+                    case IOMessage.TYPE_HEARTBEAT:
+                        send("2::");
+                        break;
+                    case IOMessage.TYPE_MESSAGE:
+                        messagePush(message.getData());
+                        if (mAuthorized) {
+                            for (String cacheMessage : mWaitPushMessages.snapshot().keySet()) {
+                                messagePush(cacheMessage);
+                            }
+                            mWaitPushMessages.evictAll();
+                        }
+                        break;
+                    case IOMessage.TYPE_JSON_MESSAGE:
+                    case IOMessage.TYPE_EVENT:
+                    case IOMessage.TYPE_ACK:
+                        break;
+                    case IOMessage.TYPE_ERROR:
+                        Set<String> keySet2 = mAsyncListeners.keySet();
+                        for (String s : keySet2) {
+                            if (GlintSocket.ALL_EVENT.contains(s)) {
+                                continue;
+                            }
+                            GlintSocketListener<String> listener = mAsyncListeners.get(s);
+                            if (listener != null) {
+                                listener.onError(message.getData());
+                            }
+                        }
+                    case IOMessage.TYPE_NOOP:
+                        break;
+                    default:
+                        break;
+                }
             }
 
             @Override
@@ -144,13 +187,10 @@ public class GlintSocketCore {
                 super.onClosed(webSocket, code, reason);
                 mConnected = false;
                 if (mAsyncListeners.containsKey(GlintSocket.EVENT_DISCONNECT)) {
-                    GlintSocketListener<SocketInnerResultBean> listener = mAsyncListeners.get(GlintSocket.EVENT_DISCONNECT);
+                    GlintSocketListener<String> listener = mAsyncListeners.get(GlintSocket.EVENT_DISCONNECT);
                     if (listener != null) {
                         try {
-                            SocketInnerResultBean bean = new SocketInnerResultBean();
-                            bean.response = "";
-                            bean.msgType = 1;
-                            listener.onProcess(bean);
+                            listener.onProcess("");
                         } catch (Throwable ignored) {
                         }
                     }
@@ -161,13 +201,10 @@ public class GlintSocketCore {
             public void onFailure(WebSocket webSocket, Throwable t, Response response) {
                 super.onFailure(webSocket, t, response);
                 if (mAsyncListeners.containsKey(GlintSocket.EVENT_ERROR)) {
-                    GlintSocketListener<SocketInnerResultBean> listener = mAsyncListeners.get(GlintSocket.EVENT_ERROR);
+                    GlintSocketListener<String> listener = mAsyncListeners.get(GlintSocket.EVENT_ERROR);
                     if (listener != null) {
                         try {
-                            SocketInnerResultBean bean = new SocketInnerResultBean();
-                            bean.response = String.valueOf(GlintSocket.ERROR_EXCEPTION);
-                            bean.msgType = 1;
-                            listener.onProcess(bean);
+                            listener.onProcess(String.valueOf(GlintSocket.ERROR_EXCEPTION));
                         } catch (Throwable ignored) {
                         }
                     }
@@ -178,25 +215,47 @@ public class GlintSocketCore {
     }
 
     private void messagePush(String messageStr) {
+        JsonParser jsonParser = new JsonParser();
+        JsonObject jsonObject = jsonParser.parse(messageStr).getAsJsonObject();
+        String cmdId;
+        boolean hasId = false;
+        if (jsonObject.get("id") != null) {
+            cmdId = jsonObject.get("id").getAsString();
+            hasId = true;
+        } else if (jsonObject.get("route") != null) {
+            cmdId = jsonObject.get("route").getAsString();
+            if (!mAuthorized) {
+                mWaitPushMessages.put(messageStr, true);
+            }
+        } else {
+            return;
+        }
         Set<String> keySet = mAsyncListeners.keySet();
-        for (String s : keySet) {
-            GlintSocketListener<SocketInnerResultBean> listener = mAsyncListeners.get(s);
+        if (keySet.contains(cmdId)) {
+            String body = jsonObject.get("body").toString();
+            GlintSocketListener<String> listener = mAsyncListeners.get(cmdId);
             if (listener != null) {
                 try {
-                    SocketInnerResultBean bean = new SocketInnerResultBean();
-                    bean.response = messageStr;
-                    bean.msgType = 0;
-                    listener.onProcess(bean);
+                    listener.onProcess(body);
                 } catch (Throwable e) {
                     listener.onError(e.getMessage());
                 }
             }
         }
+        if (hasId) {
+            UiKit.runOnMainThreadSync(new Runnable() {
+                @Override
+                public void run() {
+                    mAuthorized = true;
+                }
+            });
+        }
     }
 
-    synchronized void disconnect() {
+    public synchronized void disconnect() {
         mConnected = false;
         mConnecting = false;
+        mAuthorized = false;
         mAsyncListeners.clear();
         if (mWebSocket != null) {
             mWebSocket.cancel();
@@ -204,15 +263,15 @@ public class GlintSocketCore {
         }
     }
 
-    boolean isConnected() {
+    public boolean isConnected() {
         return mConnected;
     }
 
-    void on(@NonNull String cmdId, @NonNull GlintSocketListener<SocketInnerResultBean> listener) {
+    public void on(@NonNull String cmdId, @NonNull GlintSocketListener<String> listener) {
         mAsyncListeners.put(cmdId, listener);
     }
 
-    synchronized void send(@NonNull String message) {
+    public synchronized void send(@NonNull String message) {
         if (mWebSocket != null && isConnected()) {
             mWebSocket.send(message);
         } else {

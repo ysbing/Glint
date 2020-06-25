@@ -27,6 +27,8 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import okio.ByteString;
 
+import static com.ysbing.glint.util.GlintRequestUtil.sGson;
+
 /**
  * 根据网络请求封装的解析类
  * 在状态200的时候Message是数据
@@ -40,7 +42,6 @@ public class GlintHttpCore<T> implements Runnable {
     private static final Cache sCache =
             new Cache(new File(ContextHelper.getAppContext().getCacheDir(), "glint_http"),
                     1024 * 1024 * 10);
-    private static final Gson sGson = new Gson();
 
     /**
      * 用户带有List之类的类型

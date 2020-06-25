@@ -1,4 +1,4 @@
-package com.ysbing.glint.socket;
+package com.ysbing.glint.socket.socketio;
 
 import android.support.annotation.NonNull;
 
@@ -14,7 +14,7 @@ public interface GlintSocketIOCallback {
      *
      * @param socketUrl 经过拼接的socket地址
      */
-    void onSocketIoUrl(@NonNull String socketUrl);
+    void onSocketUrl(@NonNull String socketUrl);
 
     /**
      * 错误回调

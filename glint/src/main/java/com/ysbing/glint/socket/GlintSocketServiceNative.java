@@ -29,18 +29,33 @@ public class GlintSocketServiceNative extends Service implements GlintSocketServ
     }
 
     @Override
-    public void send(GlintSocketBuilderWrapper builderWrapper) throws RemoteException {
-        mStub.send(builderWrapper);
-    }
-
-    @Override
     public void connect(String url) throws RemoteException {
         mStub.connect(url);
     }
 
     @Override
+    public void connectIO(String url) throws RemoteException {
+        mStub.connectIO(url);
+    }
+
+    @Override
+    public void send(GlintSocketBuilderWrapper builderWrapper) throws RemoteException {
+        mStub.send(builderWrapper);
+    }
+
+    @Override
+    public void sendIO(GlintSocketBuilderWrapper builderWrapper) throws RemoteException {
+        mStub.sendIO(builderWrapper);
+    }
+
+    @Override
     public void on(GlintSocketBuilderWrapper builderWrapper) throws RemoteException {
         mStub.on(builderWrapper);
+    }
+
+    @Override
+    public void onIO(GlintSocketBuilderWrapper builderWrapper) throws RemoteException {
+        mStub.onIO(builderWrapper);
     }
 
     @Override

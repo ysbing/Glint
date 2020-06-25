@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 
 import com.ysbing.glint.http.GlintHttp;
 import com.ysbing.glint.http.GlintHttpListener;
-import com.ysbing.glint.socket.GlintSocketIOCallback;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -22,7 +21,7 @@ public class IOWebSocketTransport {
 
     public static void getUrl(@NonNull final URI url, @NonNull final GlintSocketIOCallback callback) {
         if ("ws".equals(url.getScheme()) || "wss".equals(url.getScheme())) {
-            callback.onSocketIoUrl(url.toString());
+            callback.onSocketUrl(url.toString());
         } else if ("http".equals(url.getScheme()) || "https".equals(url.getScheme())) {
             GlintHttp.get(url.toString() + "/socket.io/1/").signature(false).notJson(true).mainThread(false).execute(new GlintHttpListener<String>() {
                 @Override
@@ -42,7 +41,7 @@ public class IOWebSocketTransport {
                         socketUrl = url.toString() + "/socket.io/1/" + "xhr-polling" + "/" + sessionId;
 
                     }
-                    callback.onSocketIoUrl(socketUrl);
+                    callback.onSocketUrl(socketUrl);
                 }
 
                 @Override
@@ -51,6 +50,8 @@ public class IOWebSocketTransport {
                     callback.onError(error);
                 }
             });
+        } else {
+            callback.onError(new RuntimeException("Unknown url"));
         }
     }
 }
