@@ -67,7 +67,14 @@ public class GlintSocket {
     /**
      * 发送一条socket消息
      */
-    public static GlintSocket send(@NonNull String url, @NonNull String cmdId, @NonNull String message) {
+    public static GlintSocket send(@NonNull String url, @NonNull String message) {
+        return new GlintSocket(url, null, message, -1, GlintSocketBuilder.RequestType.SEND);
+    }
+
+    /**
+     * 发送一条socket消息
+     */
+    public static GlintSocket send(@NonNull String url, @Nullable String cmdId, @NonNull String message) {
         return new GlintSocket(url, cmdId, message, -1, GlintSocketBuilder.RequestType.SEND);
     }
 
@@ -153,7 +160,7 @@ public class GlintSocket {
     }
 
     public <T> void execute(@Nullable GlintSocketListener<T> listener) {
-        if (!TextUtils.isEmpty(builder.url) && !TextUtils.isEmpty(builder.cmdId)) {
+        if (!TextUtils.isEmpty(builder.url)) {
             builder.listener = listener;
             if (builder.tag == 0) {
                 builder.tag = System.identityHashCode(builder);

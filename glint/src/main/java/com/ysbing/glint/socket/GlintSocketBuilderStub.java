@@ -24,7 +24,9 @@ public class GlintSocketBuilderStub<T> extends GlintSocketBuilderWrapper.Stub {
 
     public GlintSocketBuilderStub(GlintSocketBuilder<T> builder) {
         this.builder = builder;
-        typeOfT = GlintRequestUtil.getListenerType(builder.listener.getClass());
+        if (builder.listener != null) {
+            typeOfT = GlintRequestUtil.getListenerType(builder.listener.getClass());
+        }
     }
 
     @Override
@@ -54,14 +56,14 @@ public class GlintSocketBuilderStub<T> extends GlintSocketBuilderWrapper.Stub {
 
     @Override
     public String getResponseCmdId(String response) throws RemoteException {
-        if (builder.customGlintModule != null) {
+        if (builder.listener != null && builder.customGlintModule != null) {
             if (!typeOfT.equals(Void.class)) {
                 JsonParser parser = new JsonParser();
                 JsonElement jsonElement = parser.parse(response);
                 return builder.customGlintModule.getCmdId(jsonElement, sGson, typeOfT);
             }
         }
-        return null;
+        return "";
     }
 
     @Override

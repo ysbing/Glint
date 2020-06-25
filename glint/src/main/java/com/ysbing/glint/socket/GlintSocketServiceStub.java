@@ -92,6 +92,9 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
 
     @Override
     public void on(final GlintSocketBuilderWrapper builderWrapper) throws RemoteException {
+        if (builderWrapper.getCmdId() == null) {
+            return;
+        }
         GlintSocketCore socket = mSocketArray.get(builderWrapper.getUrl());
         if (socket == null) {
             connectIO(builderWrapper.getUrl());
@@ -116,14 +119,25 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
                 super.onProcess(result);
                 Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> maps = mOnPushListeners.get(builderWrapper.getUrl());
                 if (result.msgType == 0) {
-                    if (maps != null && maps.containsKey(builderWrapper.getCmdId())
-                            && builderWrapper.getCmdId().equals(builderWrapper.getResponseCmdId(result.response))) {
+                    if (maps != null && maps.containsKey(builderWrapper.getCmdId())) {
                         SparseArrayCompat<GlintSocketBuilderWrapper> wrappers = maps.get(builderWrapper.getCmdId());
+                        String responseCmdId = null;
                         for (int i = 0; wrappers != null && i < wrappers.size(); i++) {
+                            GlintSocketBuilderWrapper socketBuilderWrapper = wrappers.get(wrappers.keyAt(i));
                             try {
-                                wrappers.get(wrappers.keyAt(i)).onResponse(result.response);
+                                if (socketBuilderWrapper == null) {
+                                    continue;
+                                }
+                                if (responseCmdId == null) {
+                                    responseCmdId = socketBuilderWrapper.getResponseCmdId(result.response);
+                                }
+                                if (builderWrapper.getCmdId().equals(responseCmdId)) {
+                                    socketBuilderWrapper.onResponse(result.response);
+                                }
                             } catch (Exception e) {
-                                wrappers.get(wrappers.keyAt(i)).onError(e.getMessage());
+                                if (builderWrapper.getCmdId().equals(responseCmdId)) {
+                                    socketBuilderWrapper.onError(e.getMessage());
+                                }
                             }
                         }
                     }
@@ -132,10 +146,14 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
                             && GlintSocket.ALL_EVENT.contains(builderWrapper.getCmdId())) {
                         SparseArrayCompat<GlintSocketBuilderWrapper> wrappers = maps.get(builderWrapper.getCmdId());
                         for (int i = 0; wrappers != null && i < wrappers.size(); i++) {
+                            GlintSocketBuilderWrapper socketBuilderWrapper = wrappers.get(wrappers.keyAt(i));
                             try {
-                                wrappers.get(wrappers.keyAt(i)).onResponse(result.response);
+                                if (socketBuilderWrapper == null) {
+                                    continue;
+                                }
+                                socketBuilderWrapper.onResponse(result.response);
                             } catch (Exception e) {
-                                wrappers.get(wrappers.keyAt(i)).onError(e.getMessage());
+                                socketBuilderWrapper.onError(e.getMessage());
                             }
                         }
                     }
@@ -147,13 +165,20 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
                 super.onError(error);
                 try {
                     Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> maps = mOnPushListeners.get(builderWrapper.getUrl());
+                    if (maps == null) {
+                        return;
+                    }
                     SparseArrayCompat<GlintSocketBuilderWrapper> wrappers = maps.get(builderWrapper.getCmdId());
                     for (int i = 0; wrappers != null && i < wrappers.size(); i++) {
+                        GlintSocketBuilderWrapper socketBuilderWrapper = wrappers.get(wrappers.keyAt(i));
                         try {
-                            wrappers.get(wrappers.keyAt(i)).onError(error);
+                            if (socketBuilderWrapper == null) {
+                                continue;
+                            }
+                            socketBuilderWrapper.onError(error);
                         } catch (Exception e) {
                             try {
-                                wrappers.get(wrappers.keyAt(i)).onError(e.getMessage());
+                                socketBuilderWrapper.onError(e.getMessage());
                             } catch (RemoteException e1) {
                                 e1.printStackTrace();
                             }
@@ -168,6 +193,9 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
 
     @Override
     public void onIO(final GlintSocketBuilderWrapper builderWrapper) throws RemoteException {
+        if (builderWrapper == null) {
+            return;
+        }
         GlintSocketIOCore socket = mSocketIOArray.get(builderWrapper.getUrl());
         if (socket == null) {
             connectIO(builderWrapper.getUrl());
@@ -194,10 +222,14 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
                 if (maps != null && maps.containsKey(builderWrapper.getCmdId())) {
                     SparseArrayCompat<GlintSocketBuilderWrapper> wrappers = maps.get(builderWrapper.getCmdId());
                     for (int i = 0; wrappers != null && i < wrappers.size(); i++) {
+                        GlintSocketBuilderWrapper socketBuilderWrapper = wrappers.get(wrappers.keyAt(i));
                         try {
-                            wrappers.get(wrappers.keyAt(i)).onResponse(result);
+                            if (socketBuilderWrapper == null) {
+                                continue;
+                            }
+                            socketBuilderWrapper.onResponse(result);
                         } catch (Exception e) {
-                            wrappers.get(wrappers.keyAt(i)).onError(e.getMessage());
+                            socketBuilderWrapper.onError(e.getMessage());
                         }
                     }
                 }
@@ -210,11 +242,15 @@ public class GlintSocketServiceStub extends GlintSocketService.Stub {
                     Map<String, SparseArrayCompat<GlintSocketBuilderWrapper>> maps = mOnPushListeners.get(builderWrapper.getUrl());
                     SparseArrayCompat<GlintSocketBuilderWrapper> wrappers = maps.get(builderWrapper.getCmdId());
                     for (int i = 0; wrappers != null && i < wrappers.size(); i++) {
+                        GlintSocketBuilderWrapper socketBuilderWrapper = wrappers.get(wrappers.keyAt(i));
                         try {
-                            wrappers.get(wrappers.keyAt(i)).onError(error);
+                            if (socketBuilderWrapper == null) {
+                                continue;
+                            }
+                            socketBuilderWrapper.onError(error);
                         } catch (Exception e) {
                             try {
-                                wrappers.get(wrappers.keyAt(i)).onError(e.getMessage());
+                                socketBuilderWrapper.onError(e.getMessage());
                             } catch (RemoteException e1) {
                                 e1.printStackTrace();
                             }

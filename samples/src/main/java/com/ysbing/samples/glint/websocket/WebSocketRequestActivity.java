@@ -42,14 +42,13 @@ public class WebSocketRequestActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 GlintSocket.off(SOCKET_URL, GlintSocket.EVENT_CONNECT);
-                GlintSocket.off(SOCKET_URL, GlintSocket.EVENT_DISCONNECT);
+                GlintSocket.off(SOCKET_URL, MySocketHttpModule.SOCKET_CMD_SEND);
                 socketOn();
             }
         });
         buttonSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GlintSocket.off(SOCKET_URL, MySocketHttpModule.SOCKET_CMD_SEND);
                 socketSend();
             }
         });
@@ -68,7 +67,7 @@ public class WebSocketRequestActivity extends AppCompatActivity {
             @Override
             public void onProcess(@NonNull String result) throws Throwable {
                 super.onProcess(result);
-                text = "socketOn,EVENT_CONNECT,result:" + result + "\n\n" + text;
+                text = "socketOn,EVENT_CONNECT\n\n" + text;
                 updateEditText();
             }
 
@@ -79,40 +78,26 @@ public class WebSocketRequestActivity extends AppCompatActivity {
                 updateEditText();
             }
         });
-        GlintSocket.on(SOCKET_URL, GlintSocket.EVENT_DISCONNECT).execute(new GlintSocketListener<String>() {
+        GlintSocket.on(SOCKET_URL, MySocketHttpModule.SOCKET_CMD_SEND)
+                .using(MySocketHttpModule.get()).execute(new GlintSocketListener<String>() {
             @Override
             public void onProcess(@NonNull String result) throws Throwable {
                 super.onProcess(result);
-                text = "socketOn,EVENT_DISCONNECT,result:" + result + "\n\n" + text;
+                text = "socketOn," + MySocketHttpModule.SOCKET_CMD_SEND + ",result:" + result + "\n\n" + text;
                 updateEditText();
             }
 
             @Override
             public void onError(@NonNull String error) {
                 super.onError(error);
-                text = "socketOn,EVENT_CONNECT,error:" + error + "\n\n" + text;
+                text = "socketOn," + MySocketHttpModule.SOCKET_CMD_SEND + ",error:" + error + "\n\n" + text;
                 updateEditText();
             }
         });
     }
 
     private void socketSend() {
-        GlintSocket.send(SOCKET_URL, MySocketHttpModule.SOCKET_CMD_SEND, "我是消息" + msgId.incrementAndGet())
-                .using(MySocketHttpModule.get()).execute(new GlintSocketListener<String>() {
-            @Override
-            public void onProcess(@NonNull String result) throws Throwable {
-                super.onProcess(result);
-                text = "socketSend,result:" + result + "\n\n" + text;
-                updateEditText();
-            }
-
-            @Override
-            public void onError(@NonNull String error) {
-                super.onError(error);
-                text = "socketSend,error:" + error + "\n\n" + text;
-                updateEditText();
-            }
-        });
+        GlintSocket.send(SOCKET_URL, "我是消息" + msgId.incrementAndGet()).execute();
     }
 
     private void updateEditText() {
