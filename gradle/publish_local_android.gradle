@@ -1,0 +1,46 @@
+apply plugin: 'maven-publish'
+
+sourceCompatibility = rootProject.ext.javaVersion
+targetCompatibility = rootProject.ext.javaVersion
+
+version rootProject.ext.VERSION_NAME
+group rootProject.ext.GROUP
+
+task androidJavadocs(type: Javadoc) {
+  source = android.sourceSets.main.java.srcDirs
+  classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+  android.libraryVariants.all { variant ->
+    if (variant.name == 'release') {
+      owner.classpath += variant.javaCompileProvider.get().classpath
+    }
+  }
+  exclude '**/R.html', '**/R.*.html', '**/index.html'
+}
+
+task sourcesJar(type: Jar) {
+  from android.sourceSets.main.java.srcDirs
+  classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: androidJavadocs) {
+  classifier = 'javadoc'
+  from androidJavadocs.destinationDir
+}
+
+artifacts {
+  archives javadocJar
+  archives sourcesJar
+}
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      from components.release
+      groupId = group
+      artifactId = POM_ARTIFACT_ID
+      version = version
+    }
+  }
+}
+
+task buildAndPublishLocalMaven(dependsOn: ['build', 'publishResguardPublicationToMavenLocal']) {}

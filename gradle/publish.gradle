@@ -1,0 +1,8 @@
+afterEvaluate {
+    apply from: rootProject.file('gradle/publish_remote.gradle')
+    if (project.plugins.hasPlugin("com.android.internal.library")) {
+        apply from: rootProject.file('gradle/publish_local_android.gradle')
+    } else {
+        apply from: rootProject.file('gradle/publish_local_java.gradle')
+    }
+}

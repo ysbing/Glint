@@ -1,0 +1,36 @@
+apply plugin: 'maven-publish'
+
+sourceCompatibility = rootProject.ext.javaVersion
+targetCompatibility = rootProject.ext.javaVersion
+
+version rootProject.ext.VERSION_NAME
+group rootProject.ext.GROUP
+
+task sourcesJar(type: Jar) {
+  from sourceSets.main.java.srcDirs
+  classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+artifacts {
+  archives javadocJar
+  archives sourcesJar
+}
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      from components.java
+      groupId = group
+      artifactId = POM_ARTIFACT_ID
+      version = version
+    }
+  }
+}
+
+task buildAndPublishLocalMaven(dependsOn: ['build', 'publishResguardPublicationToMavenLocal']) {}
+

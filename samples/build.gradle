@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+//apply plugin: 'YRouter'
 
 android {
     compileSdkVersion 28
@@ -21,7 +22,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:recyclerview-v7:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support.constraint:constraint-layout:2.0.1'
     implementation 'com.ysbing:ypermission:1.0.3'
     implementation project(':glint')
 }

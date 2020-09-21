@@ -1,13 +1,12 @@
 apply plugin: 'com.android.library'
-apply from: new File(rootProject.projectDir, "gradle/gradle-on-demand.gradle")
+apply from: rootProject.file('gradle/publish.gradle')
 
 android {
     compileSdkVersion 28
     defaultConfig {
         minSdkVersion 9
         compileSdkVersion 28
-        versionCode VERSION_CODE  as int
-        versionName VERSION_NAME as String
+        versionName GLINT_VERSION as String
     }
 }
 

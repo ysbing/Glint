@@ -6,8 +6,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.0'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+        classpath 'com.android.tools.build:gradle:4.0.1'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
 }
@@ -21,4 +21,29 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+ext {
+    javaVersion = JavaVersion.VERSION_1_8
+
+    GROUP = 'com.ysbing.glint'
+    VERSION_NAME = "${GLINT_VERSION}"
+
+    POM_NAME = "Glint"
+    POM_PACKAGING = "pom"
+    POM_DESCRIPTION = "Glint is an Http standard protocol framework based on OkHttp for Android. It supports four functions: interface request, file download, file upload and WebSocket."
+
+    POM_URL = "https://github.com/ysbing/Glint"
+    POM_SCM_URL = "https://github.com/ysbing/Glint"
+    POM_ISSUE_URL = 'https://github.com/ysbing/Glint/issues'
+
+    POM_LICENCE_NAME = "Apache-2.0"
+    POM_LICENCE_URL = " http://www.apache.org/licenses/"
+    POM_LICENCE_DIST = "repo"
+
+    POM_DEVELOPER_ID = "ysbing"
+    POM_DEVELOPER_NAME = "Chen Zhujie"
+
+    BINTRAY_LICENCE = ["Apache-2.0"]
+    BINTRAY_ORGANIZATION = "ysbing"
 }
