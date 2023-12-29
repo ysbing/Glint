@@ -1,14 +1,15 @@
 package com.ysbing.glint.socket;
 
-import android.support.annotation.NonNull;
+
+import static com.ysbing.glint.util.GlintRequestUtil.sGson;
+
+import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.ysbing.glint.util.GlintRequestUtil;
 
 import java.lang.reflect.Type;
-
-import static com.ysbing.glint.util.GlintRequestUtil.sGson;
 
 /**
  * 自定义Socket网络模块

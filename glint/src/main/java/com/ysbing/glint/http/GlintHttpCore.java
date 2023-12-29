@@ -1,8 +1,9 @@
 package com.ysbing.glint.http;
 
+import static com.ysbing.glint.util.GlintRequestUtil.sGson;
+
 import android.text.TextUtils;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -27,8 +28,6 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import okio.ByteString;
 
-import static com.ysbing.glint.util.GlintRequestUtil.sGson;
-
 /**
  * 根据网络请求封装的解析类
  * 在状态200的时候Message是数据
@@ -38,7 +37,7 @@ import static com.ysbing.glint.util.GlintRequestUtil.sGson;
  */
 public class GlintHttpCore<T> implements Runnable {
     private static final Glint GLINT = Glint.getsInstance();
-    private static OkHttpClient sClient;
+    private static final OkHttpClient sClient;
     private static final Cache sCache =
             new Cache(new File(ContextHelper.getAppContext().getCacheDir(), "glint_http"),
                     1024 * 1024 * 10);
@@ -126,10 +125,9 @@ public class GlintHttpCore<T> implements Runnable {
             JsonReader jsonReader = new JsonReader(
                     new InputStreamReader(responseBody.byteStream(), GlintRequestUtil.UTF_8));
             //开始对数据做解析处理
-            JsonParser parser = new JsonParser();
             JsonElement jsonEl;
             try {
-                jsonEl = parser.parse(jsonReader);
+                jsonEl = JsonParser.parseReader(jsonReader);
             } catch (JsonSyntaxException e) {
                 deliverError(e);
                 return;
@@ -190,8 +188,7 @@ public class GlintHttpCore<T> implements Runnable {
             JsonReader jsonReader = new JsonReader(
                     new InputStreamReader(responseBody.byteStream(), GlintRequestUtil.UTF_8));
             //开始对数据做解析处理
-            JsonParser parser = new JsonParser();
-            jsonEl = parser.parse(jsonReader);
+            jsonEl = JsonParser.parseReader(jsonReader);
             String responseStr = jsonEl.toString();
             result.setResponseStr(responseStr);
             result.setHeaders(response.headers());

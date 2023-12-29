@@ -1,8 +1,9 @@
 package com.ysbing.glint.download;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.ysbing.glint.base.BaseHttpModule;
 import com.ysbing.glint.base.Glint;
@@ -14,6 +15,7 @@ import com.ysbing.glint.util.UiKit;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -28,7 +30,7 @@ import okio.BufferedSource;
  */
 public class GlintDownloadCore implements Runnable {
     private static final Glint GLINT = Glint.getsInstance();
-    private static OkHttpClient sClient;
+    private static final OkHttpClient sClient;
     protected GlintDownloadBuilder<BaseHttpModule> mBuilder;
     private okhttp3.Call mOkHttpCall;
     private boolean mPaused = false;
@@ -194,7 +196,7 @@ public class GlintDownloadCore implements Runnable {
             byte[] buffer = new byte[2048];
             File tempFile = new File(mBuilder.saveFile.getAbsolutePath() + ".temp");
             BufferedSource source = responseBody.source();
-            if (!mBuilder.saveFile.getParentFile().exists()) {
+            if (!Objects.requireNonNull(mBuilder.saveFile.getParentFile()).exists()) {
                 boolean makeDirResult = mBuilder.saveFile.getParentFile().mkdirs();
                 if (!makeDirResult) {
                     throw new RuntimeException("Create folder failed, please manually create:" +

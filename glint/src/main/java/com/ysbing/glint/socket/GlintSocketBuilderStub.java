@@ -1,5 +1,7 @@
 package com.ysbing.glint.socket;
 
+import static com.ysbing.glint.util.GlintRequestUtil.sGson;
+
 import android.os.RemoteException;
 
 import com.google.gson.JsonElement;
@@ -8,8 +10,6 @@ import com.ysbing.glint.util.GlintRequestUtil;
 import com.ysbing.glint.util.UiKit;
 
 import java.lang.reflect.Type;
-
-import static com.ysbing.glint.util.GlintRequestUtil.sGson;
 
 /**
  * 只做Google的Gson中的JsonObject
@@ -71,8 +71,7 @@ public class GlintSocketBuilderStub<T> extends GlintSocketBuilderWrapper.Stub {
         if (builder.listener != null) {
             T t;
             if (!typeOfT.equals(Void.class)) {
-                JsonParser parser = new JsonParser();
-                JsonElement jsonElement = parser.parse(response);
+                JsonElement jsonElement = JsonParser.parseString(response);
                 if (builder.customGlintModule != null) {
                     try {
                         t = builder.customGlintModule.customDeserialize(jsonElement, sGson, typeOfT);

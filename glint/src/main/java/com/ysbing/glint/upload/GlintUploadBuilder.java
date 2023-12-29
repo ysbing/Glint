@@ -1,6 +1,6 @@
 package com.ysbing.glint.upload;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.ysbing.glint.base.BaseHttpModule;
 import com.ysbing.glint.base.Glint;

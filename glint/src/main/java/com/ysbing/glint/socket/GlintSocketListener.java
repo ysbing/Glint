@@ -1,7 +1,7 @@
 
 package com.ysbing.glint.socket;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * Socket监听器

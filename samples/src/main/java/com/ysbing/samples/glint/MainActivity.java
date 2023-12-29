@@ -1,15 +1,16 @@
 package com.ysbing.samples.glint;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.ysbing.samples.glint.download.DownloadRequestActivity;
 import com.ysbing.samples.glint.http.HttpModuleRequestActivity;
@@ -22,15 +23,15 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private class MyViewHolder extends RecyclerView.ViewHolder {
+    private static class MyViewHolder extends RecyclerView.ViewHolder {
         private MyViewHolder(@NonNull View itemView) {
             super(itemView);
         }
     }
 
-    private class MyData {
-        private String title;
-        private String des;
+    private static class MyData {
+        private final String title;
+        private final String des;
 
         private MyData(String title, String des) {
             this.title = title;
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setAdapter(new RecyclerView.Adapter<MyViewHolder>() {
-            private List<MyData> data = new ArrayList<MyData>() {{
+            private final List<MyData> data = new ArrayList<MyData>() {{
                 add(new MyData("普通请求", "请求一个HTML页面"));
                 add(new MyData("复杂请求", "自定义Module，可对OkHttp加拦截器和自定义解析数据等配置"));
                 add(new MyData("上传请求", "将本地文件上传到服务器"));
@@ -68,28 +69,25 @@ public class MainActivity extends AppCompatActivity {
                 TextView contentView = myViewHolder.itemView.findViewById(R.id.tv_content);
                 titleView.setText(data.get(i).title);
                 contentView.setText(data.get(i).des);
-                myViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        switch (myViewHolder.getAdapterPosition()) {
-                            case 0:
-                                HttpRequestActivity.startAction(MainActivity.this);
-                                break;
-                            case 1:
-                                HttpModuleRequestActivity.startAction(MainActivity.this);
-                                break;
-                            case 2:
-                                UploadRequestActivity.startAction(MainActivity.this);
-                                break;
-                            case 3:
-                                DownloadRequestActivity.startAction(MainActivity.this);
-                                break;
-                            case 4:
-                                WebSocketRequestActivity.startAction(MainActivity.this);
-                                break;
-                            default:
-                                break;
-                        }
+                myViewHolder.itemView.setOnClickListener(v -> {
+                    switch (myViewHolder.getBindingAdapterPosition()) {
+                        case 0:
+                            HttpRequestActivity.startAction(MainActivity.this);
+                            break;
+                        case 1:
+                            HttpModuleRequestActivity.startAction(MainActivity.this);
+                            break;
+                        case 2:
+                            UploadRequestActivity.startAction(MainActivity.this);
+                            break;
+                        case 3:
+                            DownloadRequestActivity.startAction(MainActivity.this);
+                            break;
+                        case 4:
+                            WebSocketRequestActivity.startAction(MainActivity.this);
+                            break;
+                        default:
+                            break;
                     }
                 });
             }

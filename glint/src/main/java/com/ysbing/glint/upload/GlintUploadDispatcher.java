@@ -14,11 +14,10 @@ import okhttp3.internal.Util;
  * 下载的线程调度
  *
  * @author ysbing
- *         创建于 2018/1/16
+ * 创建于 2018/1/16
  */
 
 public final class GlintUploadDispatcher {
-    private static GlintUploadDispatcher mInstance;
 
     private static final int maxRequests = 5;
 
@@ -30,22 +29,19 @@ public final class GlintUploadDispatcher {
     /**
      * Ready async calls in the order they'll be run.
      */
-    private final Deque<GlintUploadCore> readyAsyncCalls = new ArrayDeque<>();
+    private final Deque<GlintUploadCore<?>> readyAsyncCalls = new ArrayDeque<>();
 
     /**
      * Running asynchronous calls. Includes canceled calls that haven't finished yet.
      */
-    private final Deque<GlintUploadCore> runningAsyncCalls = new ArrayDeque<>();
+    private final Deque<GlintUploadCore<?>> runningAsyncCalls = new ArrayDeque<>();
+
+    private static final class InstanceHolder {
+        static final GlintUploadDispatcher mInstance = new GlintUploadDispatcher();
+    }
 
     public static GlintUploadDispatcher getInstance() {
-        if (mInstance == null) {
-            synchronized (GlintUploadDispatcher.class) {
-                if (mInstance == null) {
-                    mInstance = new GlintUploadDispatcher();
-                }
-            }
-        }
-        return mInstance;
+        return InstanceHolder.mInstance;
     }
 
     private GlintUploadDispatcher() {
@@ -59,7 +55,7 @@ public final class GlintUploadDispatcher {
         return executorService;
     }
 
-    public synchronized void executed(GlintUploadCore call) {
+    public synchronized void executed(GlintUploadCore<?> call) {
         if (runningAsyncCalls.size() < maxRequests) {
             runningAsyncCalls.add(call);
             executorService().execute(call);
@@ -68,7 +64,7 @@ public final class GlintUploadDispatcher {
         }
     }
 
-    public synchronized void cancel(GlintUploadCore call) {
+    public synchronized void cancel(GlintUploadCore<?> call) {
         if (call != null) {
             readyAsyncCalls.remove(call);
             runningAsyncCalls.remove(call);
@@ -77,11 +73,11 @@ public final class GlintUploadDispatcher {
     }
 
     public synchronized void cancelAll() {
-        for (GlintUploadCore call : readyAsyncCalls) {
+        for (GlintUploadCore<?> call : readyAsyncCalls) {
             call.coreCancel();
         }
 
-        for (GlintUploadCore call : runningAsyncCalls) {
+        for (GlintUploadCore<?> call : runningAsyncCalls) {
             call.coreCancel();
         }
         readyAsyncCalls.clear();
@@ -98,8 +94,8 @@ public final class GlintUploadDispatcher {
             return;
         }
 
-        for (Iterator<GlintUploadCore> i = readyAsyncCalls.iterator(); i.hasNext(); ) {
-            GlintUploadCore call = i.next();
+        for (Iterator<GlintUploadCore<?>> i = readyAsyncCalls.iterator(); i.hasNext(); ) {
+            GlintUploadCore<?> call = i.next();
             i.remove();
             runningAsyncCalls.add(call);
             executorService().execute(call);
@@ -113,7 +109,7 @@ public final class GlintUploadDispatcher {
     /**
      * Used by {@code GlintUploadCore#run} to signal completion.
      */
-    void finished(GlintUploadCore call) {
+    void finished(GlintUploadCore<?> call) {
         synchronized (this) {
             finished(runningAsyncCalls, call);
         }

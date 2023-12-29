@@ -3,12 +3,13 @@ package com.ysbing.samples.glint.websocket;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.ysbing.glint.socket.GlintSocket;
 import com.ysbing.glint.socket.GlintSocketListener;
@@ -80,20 +81,20 @@ public class WebSocketRequestActivity extends AppCompatActivity {
         });
         GlintSocket.on(SOCKET_URL, MySocketHttpModule.SOCKET_CMD_SEND)
                 .using(MySocketHttpModule.get()).execute(new GlintSocketListener<String>() {
-            @Override
-            public void onProcess(@NonNull String result) throws Throwable {
-                super.onProcess(result);
-                text = "socketOn," + MySocketHttpModule.SOCKET_CMD_SEND + ",result:" + result + "\n\n" + text;
-                updateEditText();
-            }
+                    @Override
+                    public void onProcess(@NonNull String result) throws Throwable {
+                        super.onProcess(result);
+                        text = "socketOn," + MySocketHttpModule.SOCKET_CMD_SEND + ",result:" + result + "\n\n" + text;
+                        updateEditText();
+                    }
 
-            @Override
-            public void onError(@NonNull String error) {
-                super.onError(error);
-                text = "socketOn," + MySocketHttpModule.SOCKET_CMD_SEND + ",error:" + error + "\n\n" + text;
-                updateEditText();
-            }
-        });
+                    @Override
+                    public void onError(@NonNull String error) {
+                        super.onError(error);
+                        text = "socketOn," + MySocketHttpModule.SOCKET_CMD_SEND + ",error:" + error + "\n\n" + text;
+                        updateEditText();
+                    }
+                });
     }
 
     private void socketSend() {

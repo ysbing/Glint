@@ -1,25 +1,24 @@
 
 package com.ysbing.glint.socket.socketio;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.util.LruCache;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.collection.LruCache;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ysbing.glint.base.Glint;
 import com.ysbing.glint.socket.GlintSocket;
 import com.ysbing.glint.socket.GlintSocketListener;
-import com.ysbing.glint.socket.socketio.GlintSocketIOCallback;
-import com.ysbing.glint.socket.socketio.IOMessage;
-import com.ysbing.glint.socket.socketio.IOWebSocketTransport;
 import com.ysbing.glint.util.UiKit;
 
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +39,7 @@ public class GlintSocketIOCore {
 
     public static final AtomicInteger sSendId = new AtomicInteger();
     private static final Glint GLINT = Glint.getsInstance();
-    private static OkHttpClient sClient;
+    private static final OkHttpClient sClient;
 
     private WebSocket mWebSocket;
     private final URI mUrl;
@@ -112,7 +111,7 @@ public class GlintSocketIOCore {
     private WebSocketListener getSocketListener() {
         return new WebSocketListener() {
             @Override
-            public void onOpen(WebSocket webSocket, Response response) {
+            public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
                 super.onOpen(webSocket, response);
                 mWebSocket = webSocket;
                 mConnecting = false;
@@ -133,14 +132,12 @@ public class GlintSocketIOCore {
             }
 
             @Override
-            public void onMessage(WebSocket webSocket, String text) {
+            public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
                 super.onMessage(webSocket, text);
                 IOMessage message = new IOMessage(text);
                 switch (message.getType()) {
                     case IOMessage.TYPE_DISCONNECT:
                         disconnect();
-                        break;
-                    case IOMessage.TYPE_CONNECT:
                         break;
                     case IOMessage.TYPE_HEARTBEAT:
                         send("2::");
@@ -169,21 +166,20 @@ public class GlintSocketIOCore {
                                 listener.onError(message.getData());
                             }
                         }
-                    case IOMessage.TYPE_NOOP:
-                        break;
                     default:
                         break;
                 }
             }
 
+
             @Override
-            public void onClosing(WebSocket webSocket, int code, String reason) {
+            public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
                 super.onClosing(webSocket, code, reason);
                 mConnected = false;
             }
 
             @Override
-            public void onClosed(WebSocket webSocket, int code, String reason) {
+            public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
                 super.onClosed(webSocket, code, reason);
                 mConnected = false;
                 if (mAsyncListeners.containsKey(GlintSocket.EVENT_DISCONNECT)) {
@@ -198,7 +194,7 @@ public class GlintSocketIOCore {
             }
 
             @Override
-            public void onFailure(WebSocket webSocket, Throwable t, Response response) {
+            public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
                 super.onFailure(webSocket, t, response);
                 if (mAsyncListeners.containsKey(GlintSocket.EVENT_ERROR)) {
                     GlintSocketListener<String> listener = mAsyncListeners.get(GlintSocket.EVENT_ERROR);
@@ -215,8 +211,7 @@ public class GlintSocketIOCore {
     }
 
     private void messagePush(String messageStr) {
-        JsonParser jsonParser = new JsonParser();
-        JsonObject jsonObject = jsonParser.parse(messageStr).getAsJsonObject();
+        JsonObject jsonObject = JsonParser.parseString(messageStr).getAsJsonObject();
         String cmdId;
         boolean hasId = false;
         if (jsonObject.get("id") != null) {
@@ -238,7 +233,7 @@ public class GlintSocketIOCore {
                 try {
                     listener.onProcess(body);
                 } catch (Throwable e) {
-                    listener.onError(e.getMessage());
+                    listener.onError(Objects.requireNonNull(e.getMessage()));
                 }
             }
         }
@@ -284,8 +279,7 @@ public class GlintSocketIOCore {
             disconnect();
         } else {
             for (String key : mAsyncListeners.keySet()) {
-                if (key.contains(GlintSocket.class.getSimpleName())
-                        && cmdId != null && key.contains(cmdId)) {
+                if (key.contains(GlintSocket.class.getSimpleName()) && key.contains(cmdId)) {
                     mAsyncListeners.remove(key);
                 }
             }

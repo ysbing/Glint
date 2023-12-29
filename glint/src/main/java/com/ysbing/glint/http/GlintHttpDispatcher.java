@@ -1,6 +1,6 @@
 package com.ysbing.glint.http;
 
-import android.support.v4.util.SparseArrayCompat;
+import androidx.collection.SparseArrayCompat;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.internal.Util;
 
 public final class GlintHttpDispatcher {
-    private static GlintHttpDispatcher mInstance;
 
     private static final int mMaxRequests = 32;
 
@@ -27,27 +26,24 @@ public final class GlintHttpDispatcher {
     /**
      * Ready async calls in the order they'll be run.
      */
-    private final Deque<GlintHttpCore> mReadyAsyncCalls = new ArrayDeque<>();
+    private final Deque<GlintHttpCore<?>> mReadyAsyncCalls = new ArrayDeque<>();
 
     /**
      * Running asynchronous calls. Includes canceled calls that haven't finished yet.
      */
-    private final Deque<GlintHttpCore> mRunningAsyncCalls = new ArrayDeque<>();
-    private final SparseArrayCompat<GlintHttpCore> mCallTags = new SparseArrayCompat<>();
+    private final Deque<GlintHttpCore<?>> mRunningAsyncCalls = new ArrayDeque<>();
+    private final SparseArrayCompat<GlintHttpCore<?>> mCallTags = new SparseArrayCompat<>();
     private final SparseArrayCompat<List<Integer>> mTagActivityHashCode = new SparseArrayCompat<>();
     public final List<String> mHostActivityNameList = new ArrayList<>();
     public final List<String> mHostFragmentNameList = new ArrayList<>();
     final List<Integer> mHashCodeList = new ArrayList<>();
 
+    private static final class InstanceHolder {
+        static final GlintHttpDispatcher mInstance = new GlintHttpDispatcher();
+    }
+
     public static GlintHttpDispatcher getInstance() {
-        if (mInstance == null) {
-            synchronized (GlintHttpDispatcher.class) {
-                if (mInstance == null) {
-                    mInstance = new GlintHttpDispatcher();
-                }
-            }
-        }
-        return mInstance;
+        return InstanceHolder.mInstance;
     }
 
     private GlintHttpDispatcher() {
@@ -61,7 +57,7 @@ public final class GlintHttpDispatcher {
         return mExecutorService;
     }
 
-    public synchronized void executed(GlintHttpCore call) {
+    public synchronized void executed(GlintHttpCore<?> call) {
         if (mRunningAsyncCalls.size() < mMaxRequests) {
             mRunningAsyncCalls.add(call);
             executorService().execute(call);
@@ -85,7 +81,7 @@ public final class GlintHttpDispatcher {
     }
 
     public synchronized void cancel(int tag) {
-        GlintHttpCore call = mCallTags.get(tag);
+        GlintHttpCore<?> call = mCallTags.get(tag);
         if (call != null) {
             mCallTags.remove(tag);
             List<Integer> tags = mTagActivityHashCode.get(call.mBuilder.hostHashCode);
@@ -111,11 +107,11 @@ public final class GlintHttpDispatcher {
     }
 
     public synchronized void cancelAll() {
-        for (GlintHttpCore call : mReadyAsyncCalls) {
+        for (GlintHttpCore<?> call : mReadyAsyncCalls) {
             call.coreCancel();
         }
 
-        for (GlintHttpCore call : mRunningAsyncCalls) {
+        for (GlintHttpCore<?> call : mRunningAsyncCalls) {
             call.coreCancel();
         }
         mReadyAsyncCalls.clear();
@@ -137,8 +133,8 @@ public final class GlintHttpDispatcher {
             return;
         }
 
-        for (Iterator<GlintHttpCore> i = mReadyAsyncCalls.iterator(); i.hasNext(); ) {
-            GlintHttpCore call = i.next();
+        for (Iterator<GlintHttpCore<?>> i = mReadyAsyncCalls.iterator(); i.hasNext(); ) {
+            GlintHttpCore<?> call = i.next();
             i.remove();
             mRunningAsyncCalls.add(call);
             executorService().execute(call);
@@ -152,7 +148,7 @@ public final class GlintHttpDispatcher {
     /**
      * Used by {@code GlintHttpCore#run} to signal completion.
      */
-    void finished(GlintHttpCore call) {
+    void finished(GlintHttpCore<?> call) {
         synchronized (this) {
             mCallTags.remove(call.mBuilder.tag);
             List<Integer> tags = mTagActivityHashCode.get(call.mBuilder.hostHashCode);

@@ -2,9 +2,10 @@ package com.ysbing.glint.util;
 
 import android.app.Activity;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -51,8 +52,7 @@ public class GlintRequestUtil {
      */
     public static <T> T successDeserialize(@NonNull Gson context, @NonNull String jsonStr,
                                            @NonNull Type type) {
-        JsonParser parser = new JsonParser();
-        JsonElement jsonEl = parser.parse(jsonStr);
+        JsonElement jsonEl = JsonParser.parseString(jsonStr);
         return successDeserialize(context, jsonEl, type);
     }
 
@@ -203,7 +203,7 @@ public class GlintRequestUtil {
      *
      * @param builder 构造参数
      */
-    public static void addDownloadRequestTag(@NonNull GlintDownloadBuilder builder) {
+    public static void addDownloadRequestTag(@NonNull GlintDownloadBuilder<?> builder) {
         if (builder.tag == 0) {
             builder.tag = builder.url.hashCode();
         }

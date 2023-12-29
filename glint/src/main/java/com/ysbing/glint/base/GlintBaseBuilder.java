@@ -1,7 +1,8 @@
 package com.ysbing.glint.base;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.google.gson.JsonObject;
 

@@ -29,7 +29,7 @@ import android.os.Looper;
  * You should call {@link #dispose()} operation for destruction.
  */
 final public class UiKit {
-    private static UiKitHandlerPoster mainPoster = null;
+    private static volatile UiKitHandlerPoster mainPoster = null;
 
     private static UiKitHandlerPoster getMainPoster() {
         if (mainPoster == null) {

@@ -1,6 +1,7 @@
 package com.ysbing.glint.socket.socketio;
 
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 public class IOMessage {
     public static final int TYPE_DISCONNECT = 0;
@@ -43,6 +44,7 @@ public class IOMessage {
     }
 
     @NonNull
+    @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         for (String field : this.mFields) {

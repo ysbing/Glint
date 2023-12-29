@@ -1,8 +1,9 @@
 package com.ysbing.glint.upload;
 
+import static com.ysbing.glint.util.GlintRequestUtil.sGson;
+
 import android.text.TextUtils;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -24,8 +25,6 @@ import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
-
-import static com.ysbing.glint.util.GlintRequestUtil.sGson;
 
 /**
  * 上传核心类
@@ -115,10 +114,9 @@ public class GlintUploadCore<T> implements Runnable {
             //开始对数据做解析处理
             JsonReader jsonReader = new JsonReader(
                     new InputStreamReader(responseBody.byteStream(), GlintRequestUtil.UTF_8));
-            JsonParser parser = new JsonParser();
             JsonElement jsonEl;
             try {
-                jsonEl = parser.parse(jsonReader);
+                jsonEl = JsonParser.parseReader(jsonReader);
             } catch (JsonSyntaxException e) {
                 deliverError(e);
                 return;

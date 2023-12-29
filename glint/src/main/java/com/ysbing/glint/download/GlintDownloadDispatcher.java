@@ -1,7 +1,7 @@
 package com.ysbing.glint.download;
 
-import android.support.annotation.NonNull;
-import android.support.v4.util.SparseArrayCompat;
+import androidx.annotation.NonNull;
+import androidx.collection.SparseArrayCompat;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -21,7 +21,6 @@ import okhttp3.internal.Util;
  * @author ysbing
  */
 public final class GlintDownloadDispatcher {
-    private static GlintDownloadDispatcher mInstance;
 
     private int mMaxRequests = 5;
 
@@ -41,15 +40,12 @@ public final class GlintDownloadDispatcher {
     private final List<GlintDownloadCore> mRunningAsyncCalls = new CopyOnWriteArrayList<>();
     private final SparseArrayCompat<GlintDownloadCore> mCallTags = new SparseArrayCompat<>();
 
+    private static final class InstanceHolder {
+        static final GlintDownloadDispatcher mInstance = new GlintDownloadDispatcher();
+    }
+
     public static GlintDownloadDispatcher getInstance() {
-        if (mInstance == null) {
-            synchronized (GlintDownloadDispatcher.class) {
-                if (mInstance == null) {
-                    mInstance = new GlintDownloadDispatcher();
-                }
-            }
-        }
-        return mInstance;
+        return InstanceHolder.mInstance;
     }
 
     private GlintDownloadDispatcher() {

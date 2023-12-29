@@ -5,16 +5,16 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.ysbing.glint.upload.GlintUpload;
 import com.ysbing.glint.upload.GlintUploadListener;
@@ -28,7 +28,6 @@ import java.io.File;
  */
 public class UploadRequestActivity extends AppCompatActivity {
 
-    public static final int SELECT_PHOTO = 1;
     private TextView mTextViewStatus;
     private ImageView mImageView;
     private String path;
@@ -38,6 +37,7 @@ public class UploadRequestActivity extends AppCompatActivity {
         activity.startActivity(intent);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,25 +46,16 @@ public class UploadRequestActivity extends AppCompatActivity {
         Button buttonUpload = findViewById(R.id.btn_upload);
         mTextViewStatus = findViewById(R.id.tv_status);
         mImageView = findViewById(R.id.iv_image);
-        buttonSelect.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-            @Override
-            public void onClick(View v) {
-                String[] permissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
-                PermissionManager.requestPermission(UploadRequestActivity.this, permissions, new PermissionManager.PermissionsListener() {
-                    @Override
-                    public void onPermissionGranted() {
-                        pickPhoto();
-                    }
-                });
-            }
+        buttonSelect.setOnClickListener(v -> {
+            String[] permissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+            PermissionManager.requestPermission(UploadRequestActivity.this, permissions, new PermissionManager.PermissionsListener() {
+                @Override
+                public void onPermissionGranted() {
+                    pickPhoto();
+                }
+            });
         });
-        buttonUpload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                request();
-            }
-        });
+        buttonUpload.setOnClickListener(v -> request());
     }
 
     /***
@@ -74,7 +65,14 @@ public class UploadRequestActivity extends AppCompatActivity {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Choose Image..."), SELECT_PHOTO);
+        registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == Activity.RESULT_OK) {
+                if (result.getData() != null && result.getData().getData() != null) {
+                    path = ContentUriUtil.getPath(UploadRequestActivity.this, result.getData().getData());
+                    mImageView.setImageURI(result.getData().getData());
+                }
+            }
+        }).launch(Intent.createChooser(intent, "Choose Image..."));
     }
 
     private void request() {
@@ -107,21 +105,10 @@ public class UploadRequestActivity extends AppCompatActivity {
                 @Override
                 public void onFail(@NonNull Throwable error) {
                     super.onFail(error);
-                    String str = "onFail()," + error.toString();
+                    String str = "onFail()," + error;
                     mTextViewStatus.setText(str);
                 }
             });
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK && requestCode == SELECT_PHOTO) {
-            if (data != null) {
-                path = ContentUriUtil.getPath(this, data.getData());
-                mImageView.setImageURI(data.getData());
-            }
         }
     }
 }

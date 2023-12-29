@@ -1,9 +1,10 @@
 package com.ysbing.glint.socket;
 
 import android.os.RemoteException;
-import android.support.annotation.NonNull;
-import android.support.v4.util.SparseArrayCompat;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.collection.SparseArrayCompat;
 
 import com.ysbing.glint.socket.socketio.GlintSocketIOCore;
 

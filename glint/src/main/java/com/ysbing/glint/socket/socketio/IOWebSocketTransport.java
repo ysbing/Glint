@@ -1,6 +1,7 @@
 package com.ysbing.glint.socket.socketio;
 
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.ysbing.glint.http.GlintHttp;
 import com.ysbing.glint.http.GlintHttpListener;
@@ -23,7 +24,7 @@ public class IOWebSocketTransport {
         if ("ws".equals(url.getScheme()) || "wss".equals(url.getScheme())) {
             callback.onSocketUrl(url.toString());
         } else if ("http".equals(url.getScheme()) || "https".equals(url.getScheme())) {
-            GlintHttp.get(url.toString() + "/socket.io/1/").signature(false).notJson(true).mainThread(false).execute(new GlintHttpListener<String>() {
+            GlintHttp.get(url + "/socket.io/1/").signature(false).notJson(true).mainThread(false).execute(new GlintHttpListener<String>() {
                 @Override
                 public void onSuccess(@NonNull String result) throws Throwable {
                     super.onSuccess(result);

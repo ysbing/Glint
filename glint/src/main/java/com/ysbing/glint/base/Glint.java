@@ -5,8 +5,9 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -26,7 +27,7 @@ import okhttp3.OkHttpClient;
  * @author ysbing
  */
 public final class Glint extends BaseHttpModule {
-    private static Glint sInstance;
+    private static volatile Glint sInstance;
     private BaseHttpModule mClazzBaseHttpModule;
 
     public static Glint getsInstance() {
@@ -50,7 +51,7 @@ public final class Glint extends BaseHttpModule {
         if (context == null) {
             throw new RuntimeException("Context is null");
         }
-        if (!Application.class.isInstance(context)) {
+        if (!(context instanceof Application)) {
             throw new RuntimeException("Context is not Application");
         }
         initGlintHttpModule(context);
@@ -64,12 +65,12 @@ public final class Glint extends BaseHttpModule {
             Set<String> keySet = appInfo.metaData.keySet();
             for (String key : keySet) {
                 Object value = appInfo.metaData.get(key);
-                if (!String.class.isInstance(value)) {
+                if (!(value instanceof String)) {
                     continue;
                 }
                 String valueStr = (String) value;
                 if (TextUtils.equals(valueStr, "GlintHttpModule")) {
-                    Class clazz = Class.forName(key);
+                    Class<?> clazz = Class.forName(key);
                     mClazzBaseHttpModule = (BaseHttpModule) clazz.newInstance();
                     break;
                 }

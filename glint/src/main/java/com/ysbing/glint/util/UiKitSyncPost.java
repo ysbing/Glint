@@ -26,7 +26,7 @@ package com.ysbing.glint.util;
  */
 final class UiKitSyncPost {
     private final Runnable mRunnable;
-    private boolean isEnd = false;
+    private volatile boolean isEnd = false;
 
 
     UiKitSyncPost(Runnable runnable) {

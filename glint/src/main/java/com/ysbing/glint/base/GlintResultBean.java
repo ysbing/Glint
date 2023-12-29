@@ -1,6 +1,5 @@
 package com.ysbing.glint.base;
 
-import com.ysbing.glint.base.Glint;
 import com.ysbing.glint.http.GlintHttpCore;
 
 import okhttp3.Headers;

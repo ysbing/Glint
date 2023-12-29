@@ -1,7 +1,8 @@
 package com.ysbing.glint.download;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.ysbing.glint.base.BaseHttpModule;
 import com.ysbing.glint.util.GlintRequestUtil;
@@ -106,7 +107,6 @@ public final class GlintDownload extends GlintDownloadCore {
 
     /**
      * @param urgent 是否紧急，用于插队
-     * @return
      */
     public GlintDownload urgent(boolean urgent) {
         mBuilder.urgent = urgent;
@@ -115,7 +115,6 @@ public final class GlintDownload extends GlintDownloadCore {
 
     /**
      * @param checkMd5 是否检查文件完整性
-     * @return
      */
     public GlintDownload checkMd5(boolean checkMd5) {
         mBuilder.checkMd5 = checkMd5;
@@ -124,7 +123,6 @@ public final class GlintDownload extends GlintDownloadCore {
 
     /**
      * @param md5 传入要检查文件完整性的哈希码
-     * @return
      */
     public GlintDownload md5(String md5) {
         mBuilder.md5 = md5;
@@ -185,7 +183,6 @@ public final class GlintDownload extends GlintDownloadCore {
      *
      * @param listener 回调
      */
-    @SuppressWarnings("unchecked")
     public void execute(@NonNull GlintDownloadListener listener) {
         if (!TextUtils.isEmpty(mBuilder.url)) {
             boolean newRequest = true;

@@ -1,5 +1,7 @@
 package com.ysbing.glint.http;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -15,8 +17,9 @@ final class GlintHttpCache implements Interceptor {
         this.mCacheTime = cacheTime;
     }
 
+    @NonNull
     @Override
-    public Response intercept(Chain chain) throws IOException {
+    public Response intercept(@NonNull Chain chain) throws IOException {
         return chain.proceed(chain.request()).newBuilder()
                 .removeHeader("Pragma")
                 .header("Cache-Control", "public, max-age=" + mCacheTime)

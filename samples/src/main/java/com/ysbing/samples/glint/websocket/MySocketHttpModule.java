@@ -1,6 +1,7 @@
 package com.ysbing.samples.glint.websocket;
 
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -15,6 +16,7 @@ import java.lang.reflect.Type;
  */
 public class MySocketHttpModule extends SocketHttpModule {
     public static final String SOCKET_CMD_SEND = "MY_CMD";
+
     public static MySocketHttpModule get() {
         return new MySocketHttpModule();
     }

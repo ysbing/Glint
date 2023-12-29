@@ -1,6 +1,6 @@
 package com.ysbing.glint.upload;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.ysbing.glint.util.UiKit;
 
@@ -23,12 +23,12 @@ import okio.Sink;
 public final class GlintUploadCountingRequestBody extends RequestBody {
 
     private final RequestBody body;
-    private final GlintUploadListener listener;
+    private final GlintUploadListener<?> listener;
     private long lastRefreshTime;
     private long lastBytesWritten;
     private long speed;
 
-    GlintUploadCountingRequestBody(RequestBody body, GlintUploadListener listener) {
+    GlintUploadCountingRequestBody(RequestBody body, GlintUploadListener<?> listener) {
         this.body = body;
         this.listener = listener;
     }
@@ -44,7 +44,7 @@ public final class GlintUploadCountingRequestBody extends RequestBody {
     }
 
     @Override
-    public void writeTo(BufferedSink sink) throws IOException {
+    public void writeTo(@NonNull BufferedSink sink) throws IOException {
         BufferedSink bufferedSink;
         CountingSink countingSink = new CountingSink(sink);
         bufferedSink = Okio.buffer(countingSink);

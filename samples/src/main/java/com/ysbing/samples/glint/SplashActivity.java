@@ -9,7 +9,7 @@ import android.view.Gravity;
 import android.widget.TextView;
 
 public class SplashActivity extends Activity {
-    private Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,12 +21,9 @@ public class SplashActivity extends Activity {
         textView.setGravity(Gravity.CENTER);
         textView.setBackgroundColor(Color.parseColor("#70C360"));
         setContentView(textView);
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                startActivity(new Intent(SplashActivity.this, MainActivity.class));
-                finish();
-            }
+        mHandler.postDelayed(() -> {
+            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            finish();
         }, 1000L);
     }
 

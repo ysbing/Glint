@@ -4,13 +4,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-import java.io.File;
+import androidx.annotation.NonNull;
+
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import okhttp3.Response;
 
 /**
  * 下载的监听分发
@@ -60,10 +57,8 @@ final class GlintDownloadProgressListener {
         }
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
-            public void handleMessage(Message msg) {
-                if (msg == null) {
-                    return;
-                }
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
                 if (msg.what == WHAT_UPDATE) {
                     Bundle updateData = msg.getData();
                     if (updateData == null) {

@@ -1,14 +1,15 @@
 package com.ysbing.glint.util;
 
 import android.app.Activity;
-import android.support.v4.app.Fragment;
+
+import androidx.fragment.app.Fragment;
 
 import java.lang.ref.SoftReference;
 import java.util.Stack;
 
 /**
  * @author ysbing
- *         创建于 2017/11/2
+ * 创建于 2017/11/2
  */
 public class UiStack {
     /**

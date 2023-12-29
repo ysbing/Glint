@@ -1,6 +1,6 @@
 package com.ysbing.glint.http;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * 重试接口类

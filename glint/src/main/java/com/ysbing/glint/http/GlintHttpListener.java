@@ -1,7 +1,7 @@
 package com.ysbing.glint.http;
 
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
+import androidx.annotation.CallSuper;
+import androidx.annotation.NonNull;
 
 import com.ysbing.glint.base.GlintResultBean;
 
@@ -20,14 +20,12 @@ public abstract class GlintHttpListener<T> {
 
     /**
      * @param resultBean 封装结果类
-     * @throws Exception
      */
     public void onResponse(@NonNull GlintResultBean<T> resultBean) throws Throwable {
     }
 
     /**
      * @param result 经过反序列化后的实体类
-     * @throws Exception
      */
     public void onSuccess(@NonNull T result) throws Throwable {
     }
@@ -37,7 +35,6 @@ public abstract class GlintHttpListener<T> {
      *
      * @param status 状态码
      * @param errMsg 对应的错误提示
-     * @throws Exception
      */
     public void onError(int status, @NonNull String errMsg) throws Throwable {
     }

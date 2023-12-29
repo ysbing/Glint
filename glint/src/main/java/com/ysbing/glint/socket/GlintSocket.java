@@ -2,9 +2,10 @@
 package com.ysbing.glint.socket;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.ysbing.glint.socket.socketio.GlintSocketIOCore;
 import com.ysbing.glint.socket.socketio.Protocol;
@@ -31,7 +32,7 @@ public class GlintSocket {
      * 异常断开事件，如网络中断
      */
     public static final String EVENT_ERROR = "EVENT_ERROR";
-    public static final List<String> ALL_EVENT =new ArrayList<String>(){{
+    public static final List<String> ALL_EVENT = new ArrayList<String>() {{
         add(EVENT_CONNECT);
         add(EVENT_DISCONNECT);
         add(EVENT_ERROR);

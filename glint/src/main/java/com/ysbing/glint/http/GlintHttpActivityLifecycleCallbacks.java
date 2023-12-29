@@ -8,8 +8,11 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.FragmentActivity;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.fragment.app.FragmentActivity;
 
 import com.ysbing.glint.util.UiKit;
 import com.ysbing.glint.util.UiStack;
@@ -46,7 +49,7 @@ public final class GlintHttpActivityLifecycleCallbacks implements Application.Ac
     }
 
     @Override
-    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+    public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
         mActivityCount++;
         UiStack.getInstance().pushActivity(activity);
         GlintHttpDispatcher.getInstance().mHostActivityNameList.add(activity.getClass().getName());

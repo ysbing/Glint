@@ -1,6 +1,7 @@
 package com.ysbing.glint.download;
 
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.ysbing.glint.base.BaseHttpModule;
 import com.ysbing.glint.base.Glint;
@@ -58,6 +59,7 @@ public final class GlintDownloadBuilder<E extends BaseHttpModule> extends GlintB
         }
     }
 
+    @NonNull
     @Override
     protected GlintDownloadBuilder clone() throws CloneNotSupportedException {
         return (GlintDownloadBuilder) super.clone();

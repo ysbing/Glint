@@ -1,7 +1,7 @@
 package com.ysbing.samples.glint.http;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -26,8 +26,7 @@ public class MyHttpModule extends BaseHttpModule {
     }
 
     @Override
-    public OkHttpClient.Builder onOkHttpBuildCreate(@NonNull Glint.GlintType clientType,
-                                                    @NonNull OkHttpClient.Builder builder) {
+    public OkHttpClient.Builder onOkHttpBuildCreate(@NonNull Glint.GlintType clientType, @NonNull OkHttpClient.Builder builder) {
         return builder.readTimeout(3000L, TimeUnit.MILLISECONDS)
                 .writeTimeout(5000L, TimeUnit.MILLISECONDS);
     }
@@ -49,8 +48,7 @@ public class MyHttpModule extends BaseHttpModule {
     }
 
     @Override
-    public boolean getParams(@NonNull TreeMap<String, String> originalParams,
-                             @Nullable JsonObject originalJsonParams) throws Exception {
+    public boolean getParams(@NonNull TreeMap<String, String> originalParams, @Nullable JsonObject originalJsonParams) throws Exception {
         return super.getParams(originalParams, originalJsonParams);
     }
 
